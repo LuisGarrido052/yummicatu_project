@@ -4,26 +4,16 @@ Proyecto: Yummi Catu - Repostería Artesanal y Frutillas con Crema
 Asignatura: Programación Back End (Evaluación 1 y Evaluación 2)
 """
 
-import os
 from pathlib import Path
-from dotenv import load_dotenv
 
 # 1. Definición de directorios base
 # BASE_DIR apunta a la raíz del proyecto (donde se ubica manage.py)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 2. Carga de variables de entorno desde el archivo .env (Evaluación 2)
-# Permite desacoplar credenciales sensibles y configuraciones de entorno del código fuente
-load_dotenv(BASE_DIR / '.env')
+# 2. Clave Secreta y Modo Debug definidos directamente en la configuración
+SECRET_KEY = 'django-insecure-yummicatu-reposteria-artesanal-super-secret-key-2026'
 
-# 3. Clave Secreta y Modo Debug leídos desde variables de entorno
-SECRET_KEY = os.getenv(
-    'SECRET_KEY',
-    'django-insecure-yummicatu-reposteria-artesanal-super-secret-key-2026'
-)
-
-# Convertir el valor a booleano de forma robusta
-DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 't', 'yes')
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -82,18 +72,17 @@ WSGI_APPLICATION = 'yummicatu_project.wsgi.application'
 
 
 # 6. Configuración de Base de Datos (Evaluación 2 - MySQL / MariaDB en XAMPP)
-# Se consumen las variables de entorno desde .env utilizando python-dotenv.
-# Por defecto se conecta a MySQL (puerto 3306, usuario root sin contraseña en XAMPP).
+# Se conecta a MySQL (puerto 3306, usuario root sin contraseña en XAMPP).
 
 DATABASES = {
         'default': {
             # Se utiliza el backend nativo mysql emulado vía PyMySQL en __init__.py
-            'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.mysql'),
-            'NAME': os.getenv('DB_NAME', 'yummicatu_db'),
-            'USER': os.getenv('DB_USER', 'root'),
-            'PASSWORD': os.getenv('DB_PASSWORD', ''),
-            'HOST': os.getenv('DB_HOST', 'localhost'),
-            'PORT': os.getenv('DB_PORT', '3306'),
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'yummicatu_db',
+            'USER': 'root',
+            'PASSWORD': '',
+            'HOST': 'localhost',
+            'PORT': '3306',
             'OPTIONS': {
                 'charset': 'utf8mb4',
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",

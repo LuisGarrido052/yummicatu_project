@@ -1,6 +1,5 @@
 # Dependencias principales del proyecto Yummi Catu
 Django>=5.0.0,<7.0.0
-python-dotenv>=1.0.0
 pillow>=10.0.0
 
 # Conector MySQL / MariaDB compatible con XAMPP en Windows (Evaluación 2):
