@@ -1,0 +1,11 @@
+# Dependencias principales del proyecto Yummi Catu
+Django>=5.0.0,<7.0.0
+python-dotenv>=1.0.0
+pillow>=10.0.0
+
+# Conector MySQL / MariaDB compatible con XAMPP en Windows (Evaluación 2):
+pymysql>=1.1.0
+
+# Alternativas de conectores:
+# mysqlclient>=2.2.4
+# psycopg2-binary>=2.9.9   # Para PostgreSQL

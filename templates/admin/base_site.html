@@ -1,0 +1,35 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <!-- Favicon Oficial Yummi Catu para el Panel de Administración -->
+  <link rel="icon" type="image/jpeg" href="{% static 'img/imagen_empresa.jpg' %}">
+  <link rel="shortcut icon" type="image/jpeg" href="{% static 'img/imagen_empresa.jpg' %}">
+  <link rel="apple-touch-icon" href="{% static 'img/imagen_empresa.jpg' %}">
+{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <!-- Estilos Personalizados del Panel de Administración Yummi Catu -->
+  <link rel="stylesheet" href="{% static 'css/admin_custom.css' %}">
+{% endblock %}
+
+{% block branding %}
+<div id="site-name">
+  <a href="{% url 'admin:index' %}" class="admin-brand-link" title="Ir al inicio del Panel de Administración">
+    <img src="{% static 'img/imagen_empresa.jpg' %}"
+         onerror="this.onerror=null; this.src='{{ MEDIA_URL }}imagen_empresa.jpg';"
+         alt="Logo Oficial Yummi Catu"
+         class="admin-header-logo">
+    <span class="admin-header-title">{{ site_header|default:_('Django administration') }}</span>
+  </a>
+</div>
+{% if user.is_anonymous %}
+  {% include "admin/color_theme_toggle.html" %}
+{% endif %}
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

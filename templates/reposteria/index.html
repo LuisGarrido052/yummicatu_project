@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inicio | Yummi Catu - Las Mejores Frutillas con Crema{% endblock %}
+
+{% block content %}
+<!-- ========================================================
+     HERO SECTION DE BIENVENIDA
+     ======================================================== -->
+<section class="hero-section">
+  <div class="hero-container">
+    <div class="hero-text-content">
+      <div class="badge-tag">
+        <span>🍓</span> Especialidad de la Casa
+      </div>
+      <h1 class="hero-title">
+        El placer de las auténticas <span>Frutillas con Crema</span> y repostería fina.
+      </h1>
+      <p class="hero-subtitle">
+        En <strong>Yummi Catu</strong> seleccionamos a mano las mejores frutillas chilenas 
+        y las combinamos con nuestra receta secreta de crema Chantilly artesanal, Nutella 
+        y los pasteles más esponjosos para alegrar tus días.
+      </p>
+
+      <div class="hero-actions">
+        <a href="{% url 'galeria' %}" class="btn-primary">
+          <span>🍰</span> Explorar Catálogo
+        </a>
+        <a href="{% url 'formulario' %}" class="btn-secondary">
+          <span>💌</span> Encargar Pedido
+        </a>
+      </div>
+
+      <div class="hero-features">
+        <div class="feature-pill">
+          <div class="feature-pill-icon">✓</div>
+          <span>Frutillas 100% Frescas</span>
+        </div>
+        <div class="feature-pill">
+          <div class="feature-pill-icon">✓</div>
+          <span>Crema Casera Montada al Día</span>
+        </div>
+        <div class="feature-pill">
+          <div class="feature-pill-icon">✓</div>
+          <span>Retiro en Tienda o Despacho</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fotografía Hero Principal -->
+    <div class="hero-visual">
+      <div class="hero-image-card">
+        <img src="{{ MEDIA_URL }}imagen_empresa.jpg" onerror="this.onerror=null; this.src='{% static 'img/imagen_empresa.jpg' %}';" alt="Frutillas con crema y repostería artesanal Yummi Catu">
+      </div>
+      <div class="hero-floating-badge">
+        <div class="badge-icon">🍓</div>
+        <div class="badge-info">
+          <strong>Copa Suprema Catu</strong>
+          <span>+1,500 pedidos este mes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================
+     PRODUCTOS ESTRELLA (PREVIEW DINÁMICO)
+     ======================================================== -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-pretitle">Favoritos de nuestros clientes</div>
+    <h2 class="section-title">Nuestros Productos Estrella</h2>
+    <p class="section-description">
+      Descubre las creaciones más amadas de nuestro obrador. Preparadas cada mañana con ingredientes de primera selección.
+    </p>
+  </div>
+
+  <div class="product-grid">
+    {% for prod in productos_destacados %}
+      <article class="product-card">
+        <div class="product-image-wrap">
+          <img src="{% static prod.foto %}" alt="{{ prod.nombre }}" loading="lazy">
+          <span class="product-tag">{{ prod.categoria }}</span>
+        </div>
+        <div class="product-card-body">
+          <div class="product-category-label">{{ prod.categoria }}</div>
+          <h3 class="product-card-title">{{ prod.nombre }}</h3>
+          <p class="product-card-desc">{{ prod.descripcion }}</p>
+          <div class="product-card-footer">
+            <span class="product-price">${{ prod.precio|default:"4.500" }}</span>
+            <a href="{% url 'formulario' %}?producto={{ prod.id }}" class="btn-card-order">
+              Pedir Ahora
+            </a>
+          </div>
+        </div>
+      </article>
+    {% empty %}
+      <p style="text-align: center; grid-column: 1 / -1; color: var(--text-muted);">
+        Pronto publicaremos más creaciones del día.
+      </p>
+    {% endfor %}
+  </div>
+
+  <div style="text-align: center; margin-top: 3.5rem;">
+    <a href="{% url 'galeria' %}" class="btn-secondary">
+      Ver Todo el Catálogo Completo ({{ productos_destacados|length }} y más) →
+    </a>
+  </div>
+</section>
+
+<!-- ========================================================
+     BANNER PROMOCIONES & EXPERIENCIA
+     ======================================================== -->
+<section class="section section-alt">
+  <div class="section-header">
+    <div class="section-pretitle">Experiencia Yummi Catu</div>
+    <h2 class="section-title">¿Por qué nuestras frutillas enamoran?</h2>
+    <p class="section-description">
+      Cada porción está pensada para brindar una experiencia sensorial inolvidable.
+    </p>
+  </div>
+
+  <div class="pillars-grid" style="max-width: 1200px; margin: 0 auto;">
+    <div class="pillar-card">
+      <div class="pillar-icon">🍓</div>
+      <h3>Selección Premium</h3>
+      <p>Frutillas cosechadas en su punto óptimo de maduración, de color rojo vibrante y textura firme.</p>
+    </div>
+    <div class="pillar-card">
+      <div class="pillar-icon">🧁</div>
+      <h3>Chantilly Secreta</h3>
+      <p>Nuestra crema se bate en tandas pequeñas con vainas de vainilla auténtica, logrando ligereza y suavidad.</p>
+    </div>
+    <div class="pillar-card">
+      <div class="pillar-icon">🍫</div>
+      <h3>Toppings de Autor</h3>
+      <p>Nutella cremosa, salsa casera de frambuesas, trozos de brownie húmedo y chocolate belga al 70%.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

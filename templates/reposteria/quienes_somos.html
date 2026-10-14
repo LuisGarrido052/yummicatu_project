@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Quiénes Somos | Yummi Catu - Pasión por la Repostería Artesanal{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="story-container">
+    <div class="section-header">
+      <div class="section-pretitle">Nuestra Historia y Filosofía</div>
+      <h1 class="section-title">La Dulce Pasión Detrás de Yummi Catu</h1>
+      <p class="section-description">
+        De un anhelo familiar por rescatar los sabores auténticos y caseros a convertirnos 
+        en el rincón favorito de quienes aman la buena repostería.
+      </p>
+    </div>
+
+    <!-- Bloque 1: Historia & Visión -->
+    <div class="story-grid">
+      <div class="story-text">
+        <h2>Donde la tradición se une con la frescura</h2>
+        <p>
+          <strong>Yummi Catu</strong> nació con un propósito simple pero contundente: devolverle a los postres 
+          la frescura, el cariño y la dedicación que los procesos industriales dejaron atrás.
+        </p>
+        <p>
+          Nuestra historia comenzó en una pequeña cocina casera preparando frutillas con crema para amigos y vecinos. 
+          La fascinación por el contraste entre la acidez natural de la fruta fresca, la cremosidad etérea de nuestra 
+          receta de crema Chantilly y el chocolate derretido rápidamente convirtió cada fin de semana en un evento esperado.
+        </p>
+        <p>
+          Hoy contamos con un obrador artesanal donde cada torta, cheesecake y copa se monta al momento, 
+          respetando los tiempos de reposo, el batido manual y la más exigente selección de materias primas.
+        </p>
+      </div>
+      <div class="story-image-wrap">
+        <img src="{{ MEDIA_URL }}imagen_empresa.jpg" onerror="this.onerror=null; this.src='{% static 'img/imagen_empresa.jpg' %}';" alt="Concepto dulce y repostería artesanal Yummi Catu">
+      </div>
+    </div>
+
+    <!-- Bloque 2: Tres Pilares de Excelencia -->
+    <div class="section-header" style="margin-bottom: 2rem;">
+      <div class="section-pretitle">Nuestro Compromiso</div>
+      <h2 class="section-title">Los Pilares de Yummi Catu</h2>
+    </div>
+
+    <div class="pillars-grid">
+      <div class="pillar-card">
+        <div class="pillar-icon">🌱</div>
+        <h3>Fruta Fresca Local</h3>
+        <p>
+          Trabajamos de la mano con productores agrícolas locales que nos entregan frutillas cosechadas a diario, 
+          libres de conservantes artificiales y en su óptimo estado de dulzura natural.
+        </p>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-icon">🥣</div>
+        <h3>Elaboración 100% Artesanal</h3>
+        <p>
+          No utilizamos premezclas comerciales ni sustitutos grasos. Nuestras cremas, bizcochos y ganaches 
+          se elaboran desde cero con huevos de campo, mantequilla pura y chocolate belga.
+        </p>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-icon">❤️</div>
+        <h3>Dedicación Personalizada</h3>
+        <p>
+          Entendemos que cada celebración es única. Por eso cada encargo recibe atención individualizada, 
+          permitiéndote personalizar dedicatorias, niveles de dulzor y toppings especiales.
+        </p>
+      </div>
+    </div>
+
+    <!-- Llamado a la acción -->
+    <div style="text-align: center; margin-top: 4rem; padding: 2.5rem; background: var(--color-cream-soft); border-radius: 24px; border: 1px solid var(--border-light);">
+      <h3 style="font-family: var(--font-heading); font-size: 1.8rem; color: var(--color-chocolate); margin-bottom: 0.8rem;">
+        ¿Listo para probar la diferencia?
+      </h3>
+      <p style="color: var(--text-muted); margin-bottom: 1.8rem; max-width: 550px; margin-left: auto; margin-right: auto;">
+        Te invitamos a revisar nuestra galería completa de creaciones o a solicitar un encargo exclusivo para tu próxima ocasión especial.
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="{% url 'galeria' %}" class="btn-primary">Ver Galería de Productos</a>
+        <a href="{% url 'formulario' %}" class="btn-secondary">Hacer un Encargo</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

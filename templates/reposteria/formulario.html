@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Encargos y Pedidos Personalizados | Yummi Catu{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="form-section-container">
+    <div class="section-header">
+      <div class="section-pretitle">Atención Personalizada</div>
+      <h1 class="section-title">Encarga tu Postre o Torta Favorita</h1>
+      <p class="section-description">
+        Cuéntanos qué delicia deseas disfrutar o para qué evento estás preparando tu encargo. 
+        Completando este formulario tu pedido quedará registrado en nuestro sistema.
+      </p>
+    </div>
+
+    <div class="form-card">
+      <form method="POST" action="{% url 'formulario' %}" id="orderForm" novalidate>
+        <!-- REQUISITO DE SEGURIDAD DJANGO: Token de Protección contra falsificación de petición en sitios cruzados -->
+        {% csrf_token %}
+
+        <div class="form-grid">
+          <!-- 1. Campo RUN Cliente (Primary Key en el modelo Cliente) -->
+          <div>
+            <label for="id_run" class="form-label">
+              RUN del Cliente <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              name="run" 
+              id="id_run" 
+              class="form-control" 
+              placeholder="Ej: 12345678-9" 
+              value="{{ form_data.run|default:'' }}"
+              required 
+              maxlength="10"
+              autocomplete="off"
+            >
+            <span class="form-hint">Sin puntos y con guión verificador.</span>
+          </div>
+
+          <!-- 2. Campo Teléfono / WhatsApp -->
+          <div>
+            <label for="id_telefono" class="form-label">
+              Teléfono / WhatsApp <span class="required">*</span>
+            </label>
+            <input 
+              type="tel" 
+              name="telefono" 
+              id="id_telefono" 
+              class="form-control" 
+              placeholder="Ej: +56912345678" 
+              value="{{ form_data.telefono|default:'' }}"
+              required 
+              maxlength="12"
+            >
+            <span class="form-hint">Te contactaremos para confirmar tu pedido.</span>
+          </div>
+
+          <!-- 3. Campo Nombre del Cliente -->
+          <div>
+            <label for="id_nombre" class="form-label">
+              Nombre <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              name="nombre" 
+              id="id_nombre" 
+              class="form-control" 
+              placeholder="Tu nombre" 
+              value="{{ form_data.nombre|default:'' }}"
+              required 
+              maxlength="100"
+            >
+          </div>
+
+          <!-- 4. Campo Apellido del Cliente -->
+          <div>
+            <label for="id_apellido" class="form-label">
+              Apellido <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              name="apellido" 
+              id="id_apellido" 
+              class="form-control" 
+              placeholder="Tu apellido" 
+              value="{{ form_data.apellido|default:'' }}"
+              required 
+              maxlength="100"
+            >
+          </div>
+
+          <!-- 5. Campo Correo Electrónico -->
+          <div class="form-group-full">
+            <label for="id_correo" class="form-label">
+              Correo Electrónico <span class="required">*</span>
+            </label>
+            <input 
+              type="email" 
+              name="correo" 
+              id="id_correo" 
+              class="form-control" 
+              placeholder="ejemplo@correo.cl" 
+              value="{{ form_data.correo|default:'' }}"
+              required
+            >
+            <span class="form-hint">Te enviaremos el comprobante y el resumen de tu solicitud.</span>
+          </div>
+
+          <!-- 6. Selección de Producto (Clave Foránea hacia Producto) -->
+          <div class="form-group-full">
+            <label for="id_producto" class="form-label">
+              Selecciona tu Producto o Especialidad <span class="required">*</span>
+            </label>
+            <select name="producto" id="id_producto" class="form-control" required>
+              <option value="" disabled {% if not request.GET.producto %}selected{% endif %}>
+                -- Elige una delicia del catálogo --
+              </option>
+              {% for prod in productos %}
+                <option 
+                  value="{{ prod.id }}" 
+                  {% if request.GET.producto == prod.id|stringformat:"s" %}selected{% endif %}
+                >
+                  🍓 {{ prod.nombre }} ({{ prod.categoria }}) - ${{ prod.precio|default:"4.500" }}
+                </option>
+              {% endfor %}
+            </select>
+            <span class="form-hint">Puedes ver fotos y detalles de cada uno en la sección de Catálogo.</span>
+          </div>
+
+          <!-- 7. Detalle del Encargo (Requisito modelo Solicitud) -->
+          <div class="form-group-full">
+            <label for="id_detalle" class="form-label">
+              Detalle del Encargo / Requisitos Especiales <span class="required">*</span>
+            </label>
+            <textarea 
+              name="detalle" 
+              id="id_detalle" 
+              class="form-control" 
+              placeholder="Indica la fecha y hora estimada de retiro, dedicatoria especial sobre la torta, tamaño de porciones o requerimientos especiales (ej: menos azúcar, sin nueces)..." 
+              required
+            >{{ form_data.detalle|default:'' }}</textarea>
+            <span class="form-hint">Especifica todos los detalles para que tu pedido sea perfecto.</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">
+            Los campos marcados con <span style="color: var(--color-primary); font-weight: bold;">*</span> son obligatorios.
+          </p>
+          <button type="submit" class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.05rem;">
+            <span>💌</span> Enviar Solicitud de Pedido
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Explicación de Arquitectura de Datos para la Evaluación -->
+    <div style="margin-top: 3rem; padding: 1.8rem; background: #fff; border-radius: 20px; border-left: 5px solid var(--color-gold); box-shadow: var(--shadow-sm);">
+      <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: var(--color-chocolate); margin-bottom: 0.5rem;">
+        ⚙️ Arquitectura de Persistencia Relacional (Evaluación 2):
+      </h3>
+      <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin: 0;">
+        Al procesar este formulario mediante el método <code>POST</code>, la vista <code>formulario</code> gestiona 
+        automáticamente la persistencia en base de datos: registra o actualiza la entidad <code>Cliente</code> mediante su 
+        <code>run_cliente</code> (clave primaria), vincula la clave foránea hacia <code>Producto</code> y genera una nueva tupla 
+        en la tabla relacional <code>Solicitud</code> con marca de tiempo automática (<code>auto_now_add=True</code>).
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}

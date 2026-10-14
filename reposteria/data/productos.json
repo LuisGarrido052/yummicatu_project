@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "nombre": "Frutillas con Crema Tradicionales",
+    "categoria": "Frutillas con crema",
+    "descripcion": "La insignia de Yummi Catu: frutillas chilenas seleccionadas a mano, bañadas en abundante crema Chantilly artesanal montada al día y coulis de frutos rojos.",
+    "foto": "img/productos/frutillas_tradicionales.jpg",
+    "precio": 4500,
+    "destacado": true
+  },
+  {
+    "id": 2,
+    "nombre": "Torta Tres Leches Catu",
+    "categoria": "Tortas",
+    "descripcion": "Bizcocho esponjoso remojado en nuestra mezcla secreta de tres leches perfumada con vainilla bourbon, coronada con suave merengue flameado y canela.",
+    "foto": "img/productos/torta_tres_leches.jpg",
+    "precio": 18900,
+    "destacado": true
+  },
+  {
+    "id": 3,
+    "nombre": "Cheesecake de Frutos Rojos",
+    "categoria": "Postres Fríos",
+    "descripcion": "Textura extra cremosa al estilo New York sobre crocante base de galletas de mantequilla, cubierto con mermelada y reducción de frambuesas y moras silvestres.",
+    "foto": "img/productos/cheesecake_frutos_rojos.jpg",
+    "precio": 16500,
+    "destacado": true
+  },
+  {
+    "id": 4,
+    "nombre": "Tarta de Chocolate y Nutella",
+    "categoria": "Tartas",
+    "descripcion": "Masa quebrada crujiente rellena con densa ganache de chocolate belga al 70%, abundante Nutella cremosa y virutas de chocolate semiamargo.",
+    "foto": "img/productos/tarta_chocolate.jpg",
+    "precio": 15900,
+    "destacado": true
+  },
+  {
+    "id": 5,
+    "nombre": "Frutillas con Crema Suprema y Oreo",
+    "categoria": "Frutillas con crema",
+    "descripcion": "Capas generosas de crema dulce artesanal, fresca selección de frutillas picadas, abundante salsa de chocolate y trocitos crocantes de galletas Oreo.",
+    "foto": "img/productos/frutillas_nutella.jpg",
+    "precio": 5200,
+    "destacado": true
+  },
+  {
+    "id": 6,
+    "nombre": "Pie de Limón Merengado",
+    "categoria": "Tartas",
+    "descripcion": "Base crocante de masa sablée con suave crema de limón natural de Pica y abundante merengue italiano flameado a la minuta.",
+    "foto": "img/productos/pie_de_limon.jpg",
+    "precio": 14900,
+    "destacado": false
+  }
+]

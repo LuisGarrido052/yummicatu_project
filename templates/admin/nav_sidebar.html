@@ -1,0 +1,20 @@
+{% load i18n static %}
+<button class="sticky toggle-nav-sidebar" id="toggle-nav-sidebar" aria-label="{% translate 'Toggle navigation' %}"></button>
+<nav class="sticky" id="nav-sidebar" aria-label="{% translate 'Sidebar' %}">
+  <div class="nav-sidebar-brand">
+    <a href="{% url 'admin:index' %}" class="admin-sidebar-brand-link" title="Ir al Panel de Administración">
+      <img src="{% static 'img/imagen_empresa.jpg' %}"
+           onerror="this.onerror=null; this.src='{{ MEDIA_URL }}imagen_empresa.jpg';"
+           alt="Logo Oficial Yummi Catu"
+           class="admin-sidebar-logo">
+      <div class="admin-sidebar-brand-text">
+        <span class="sidebar-brand-name">Yummi Catu</span>
+        <span class="sidebar-brand-sub">Repostería Artesanal</span>
+      </div>
+    </a>
+  </div>
+  <input type="search" id="nav-filter"
+         placeholder="{% translate 'Start typing to filter…' %}"
+         aria-label="{% translate 'Filter navigation items' %}">
+  {% include 'admin/app_list.html' with app_list=available_apps show_changelinks=False %}
+</nav>
