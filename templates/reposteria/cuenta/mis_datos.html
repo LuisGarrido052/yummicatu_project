@@ -1,0 +1,30 @@
+{% extends 'reposteria/cuenta/base_cuenta.html' %}
+
+{% block title %}Mis datos | Yummi Catu{% endblock %}
+
+{% block contenido_area %}
+<h1 class="yc-area-titulo">Mis datos</h1>
+<p class="yc-area-subtitulo">Usamos estos datos para confirmar tus encargos por WhatsApp o correo.</p>
+
+<div class="yc-card">
+  <form method="post" class="yc-form" novalidate>
+    {% csrf_token %}
+    {% include 'reposteria/_errores_form.html' %}
+    <div class="form-grid">
+      <div class="yc-field form-group-full">
+        <label class="form-label">RUN</label>
+        <input type="text" value="{{ object.run_cliente }}" disabled>
+        <span class="form-hint">El RUN identifica tu ficha y no se puede cambiar.</span>
+      </div>
+      {% include 'reposteria/_campo.html' with campo=form.nombre_cliente %}
+      {% include 'reposteria/_campo.html' with campo=form.apellido %}
+      {% include 'reposteria/_campo.html' with campo=form.correo %}
+      {% include 'reposteria/_campo.html' with campo=form.telefono %}
+    </div>
+    <div class="yc-form-actions">
+      <a href="{% url 'password_change' %}" class="yc-link">Cambiar mi contraseña</a>
+      <button type="submit" class="btn-primary">Guardar cambios</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

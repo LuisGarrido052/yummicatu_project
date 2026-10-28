@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="yc-area">
+  <aside class="yc-area-menu">
+    <h2>Mi cuenta</h2>
+    {% with nombre=request.resolver_match.url_name %}
+    <ul>
+      <li><a href="{% url 'cuenta:inicio' %}" class="{% if nombre == 'inicio' %}active{% endif %}">Inicio</a></li>
+      <li><a href="{% url 'cuenta:pedidos' %}" class="{% if nombre == 'pedidos' or nombre == 'pedido_detalle' %}active{% endif %}">Mis pedidos</a></li>
+      <li><a href="{% url 'formulario' %}">Nuevo encargo</a></li>
+      <li><a href="{% url 'cuenta:mis_datos' %}" class="{% if nombre == 'mis_datos' %}active{% endif %}">Mis datos</a></li>
+      <li><a href="{% url 'password_change' %}">Cambiar contraseña</a></li>
+    </ul>
+    {% endwith %}
+  </aside>
+  <section class="yc-area-contenido">
+    {% block contenido_area %}{% endblock %}
+  </section>
+</div>
+{% endblock %}

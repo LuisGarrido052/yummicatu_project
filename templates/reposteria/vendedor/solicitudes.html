@@ -1,0 +1,50 @@
+{% extends 'reposteria/vendedor/base_vendedor.html' %}
+
+{% block title %}Solicitudes | Panel vendedor | Yummi Catu{% endblock %}
+
+{% block contenido_area %}
+<h1 class="yc-area-titulo">Bandeja de solicitudes</h1>
+<p class="yc-area-subtitulo">Las pendientes aparecen primero. {{ page_obj.paginator.count }} solicitud{{ page_obj.paginator.count|pluralize:"es" }} encontrada{{ page_obj.paginator.count|pluralize }}.</p>
+
+<div class="yc-card">
+  <form method="get" class="yc-filtros">
+    <div>
+      <label for="f_q">Buscar</label>
+      <input type="search" name="q" id="f_q" value="{{ filtros.q }}" placeholder="RUN, nombre o producto">
+    </div>
+    <div>
+      <label for="f_estado">Estado</label>
+      <select name="estado" id="f_estado">
+        <option value="">Todos</option>
+        {% for clave, nombre in estados %}
+          <option value="{{ clave }}" {% if filtros.estado == clave %}selected{% endif %}>{{ nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="f_categoria">Categoría</label>
+      <select name="categoria" id="f_categoria">
+        <option value="">Todas</option>
+        {% for categoria in categorias %}
+          <option value="{{ categoria }}" {% if filtros.categoria == categoria %}selected{% endif %}>{{ categoria }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="f_desde">Desde</label>
+      <input type="date" name="desde" id="f_desde" value="{{ filtros.desde }}">
+    </div>
+    <div>
+      <label for="f_hasta">Hasta</label>
+      <input type="date" name="hasta" id="f_hasta" value="{{ filtros.hasta }}">
+    </div>
+    <div>
+      <button type="submit" class="btn-primary">Filtrar</button>
+    </div>
+  </form>
+  {% if querystring %}<p class="form-hint"><a href="{% url 'vendedor:solicitudes' %}" class="yc-link">Limpiar filtros</a></p>{% endif %}
+
+  {% include 'reposteria/vendedor/_tabla_solicitudes.html' %}
+  {% include 'reposteria/_paginacion.html' %}
+</div>
+{% endblock %}

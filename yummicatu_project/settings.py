@@ -135,3 +135,14 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# 11. Autenticación (cuentas de compradores y vendedores)
+# Tras el login, la vista 'post_login' redirige según el rol: /admin/, /vendedor/ o /mi-cuenta/.
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'post_login'
+LOGOUT_REDIRECT_URL = 'index'
+
+# En desarrollo los correos de recuperación de contraseña se muestran en la consola
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'Yummi Catu <contacto@yummicatu.cl>'

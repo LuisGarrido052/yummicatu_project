@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="section">
+  <div class="form-section-container yc-auth-container">
+    <div class="section-header">
+      <div class="section-pretitle">{% block pretitulo %}Cuenta Yummi Catu{% endblock %}</div>
+      <h1 class="section-title">{% block titulo_auth %}{% endblock %}</h1>
+      {% block descripcion %}{% endblock %}
+    </div>
+    <div class="form-card">
+      {% block cuerpo %}{% endblock %}
+    </div>
+  </div>
+</section>
+{% endblock %}

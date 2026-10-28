@@ -1,0 +1,5 @@
+{% if form.non_field_errors %}
+  <div class="alert alert-error yc-form-alert">
+    ⚠️ <span>{% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</span>
+  </div>
+{% endif %}

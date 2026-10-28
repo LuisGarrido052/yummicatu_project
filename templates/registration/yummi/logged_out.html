@@ -1,0 +1,12 @@
+{% extends 'registration/base_auth.html' %}
+
+{% block title %}Sesión cerrada | Yummi Catu{% endblock %}
+{% block titulo_auth %}Sesión cerrada{% endblock %}
+
+{% block cuerpo %}
+<p class="yc-texto">Cerraste tu sesión. ¡Gracias por visitar Yummi Catu!</p>
+<div class="yc-form-actions">
+  <a href="{% url 'index' %}" class="yc-link">Volver al inicio</a>
+  <a href="{% url 'login' %}" class="btn-primary">Ingresar de nuevo</a>
+</div>
+{% endblock %}

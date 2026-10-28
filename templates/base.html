@@ -63,9 +63,30 @@
         <a href="{% url 'formulario' %}" class="btn-nav-order">
           <span>🍓</span> Hacer Pedido
         </a>
-        <a href="/admin/" class="btn-nav-admin" title="Panel de Administración Django">
-          Admin
-        </a>
+        {% if user.is_authenticated %}
+          {% if perms.reposteria.change_solicitud %}
+            <a href="{% url 'vendedor:resumen' %}" class="btn-nav-admin btn-nav-panel" title="Bandeja de solicitudes y productos">
+              Panel vendedor
+            </a>
+          {% endif %}
+          {% if user.cliente %}
+            <a href="{% url 'cuenta:inicio' %}" class="btn-nav-admin btn-nav-panel" title="Mis pedidos y mis datos">
+              Mi cuenta
+            </a>
+          {% endif %}
+          {% if user.is_superuser %}
+            <a href="{% url 'admin:index' %}" class="btn-nav-admin" title="Panel de Administración Django">
+              Admin
+            </a>
+          {% endif %}
+          <form method="post" action="{% url 'logout' %}" class="nav-logout-form">
+            {% csrf_token %}
+            <button type="submit" class="btn-nav-admin">Salir</button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}" class="btn-nav-admin">Ingresar</a>
+          <a href="{% url 'registro' %}" class="btn-nav-admin btn-nav-panel">Crear cuenta</a>
+        {% endif %}
       </div>
     </div>
   </header>
@@ -115,7 +136,11 @@
           <li><a href="{% url 'quienes_somos' %}">Quiénes Somos</a></li>
           <li><a href="{% url 'galeria' %}">Galería de Productos</a></li>
           <li><a href="{% url 'formulario' %}">Pedidos Personalizados</a></li>
-          <li><a href="/admin/">Panel Django Admin</a></li>
+          {% if user.is_superuser %}
+            <li><a href="{% url 'admin:index' %}">Panel Django Admin</a></li>
+          {% elif not user.is_authenticated %}
+            <li><a href="{% url 'registro' %}">Crear cuenta</a></li>
+          {% endif %}
         </ul>
       </div>
 

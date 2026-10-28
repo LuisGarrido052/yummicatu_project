@@ -1,0 +1,47 @@
+{% extends 'reposteria/vendedor/base_vendedor.html' %}
+
+{% block title %}Clientes | Panel vendedor | Yummi Catu{% endblock %}
+
+{% block contenido_area %}
+<h1 class="yc-area-titulo">Clientes</h1>
+<p class="yc-area-subtitulo">Listado de solo lectura con la cantidad de pedidos de cada cliente.</p>
+
+<div class="yc-card">
+  <form method="get" class="yc-filtros" style="grid-template-columns: 1fr auto;">
+    <div>
+      <label for="f_q">Buscar</label>
+      <input type="search" name="q" id="f_q" value="{{ q }}" placeholder="RUN, nombre o correo">
+    </div>
+    <div><button type="submit" class="btn-primary">Buscar</button></div>
+  </form>
+  <div class="yc-tabla-wrap">
+    <table class="yc-tabla">
+      <thead>
+        <tr><th>RUN</th><th>Nombre</th><th>Contacto</th><th>Cuenta</th><th class="num">Pedidos</th></tr>
+      </thead>
+      <tbody>
+        {% for cliente in clientes %}
+          <tr>
+            <td>{{ cliente.run_cliente }}</td>
+            <td>{{ cliente.nombre_cliente }} {{ cliente.apellido }}</td>
+            <td>
+              <a href="tel:+{{ cliente.telefono_digitos }}" class="yc-link">{{ cliente.telefono }}</a>
+              {% if cliente.whatsapp_url %} · <a href="{{ cliente.whatsapp_url }}" target="_blank" rel="noopener" class="yc-link">WhatsApp</a>{% endif %}
+              <br><span class="form-hint">{{ cliente.correo }}</span>
+            </td>
+            <td>{% if cliente.usuario_id %}Registrado{% else %}—{% endif %}</td>
+            <td class="num">
+              {% if cliente.total_pedidos %}
+                <a href="{% url 'vendedor:solicitudes' %}?q={{ cliente.run_cliente|urlencode }}" class="yc-link">{{ cliente.total_pedidos }}</a>
+              {% else %}0{% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="yc-vacio">No hay clientes{% if q %} que coincidan con "{{ q }}"{% endif %}.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include 'reposteria/_paginacion.html' %}
+</div>
+{% endblock %}

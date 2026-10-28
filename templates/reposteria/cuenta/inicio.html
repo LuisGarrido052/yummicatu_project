@@ -1,0 +1,24 @@
+{% extends 'reposteria/cuenta/base_cuenta.html' %}
+
+{% block title %}Mi cuenta | Yummi Catu{% endblock %}
+
+{% block contenido_area %}
+<h1 class="yc-area-titulo">¡Hola, {{ cliente.nombre_cliente }}! 🍓</h1>
+<p class="yc-area-subtitulo">Aquí puedes seguir tus encargos y repetir tus favoritos.</p>
+
+<div class="yc-card">
+  <div class="yc-card-head">
+    <h3>Pedidos en curso</h3>
+    <a href="{% url 'formulario' %}" class="btn-primary">Nuevo encargo</a>
+  </div>
+  {% include 'reposteria/cuenta/_tabla_pedidos.html' with pedidos=pedidos_en_curso vacio="No tienes pedidos en curso." %}
+</div>
+
+<div class="yc-card">
+  <div class="yc-card-head">
+    <h3>Últimos pedidos</h3>
+    <a href="{% url 'cuenta:pedidos' %}" class="yc-link">Ver todos</a>
+  </div>
+  {% include 'reposteria/cuenta/_tabla_pedidos.html' with pedidos=ultimos_pedidos %}
+</div>
+{% endblock %}

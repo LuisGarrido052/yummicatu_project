@@ -6,6 +6,9 @@ Requisito Evaluación 2:
 - Modelo Solicitud (relación entre Cliente y Producto con detalle del encargo)
 """
 
+import re
+
+from django.conf import settings
 from django.db import models
 
 
@@ -99,6 +102,15 @@ class Cliente(models.Model):
         verbose_name="Teléfono / WhatsApp",
         help_text="Ej: +56912345678"
     )
+    usuario = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="cliente",
+        verbose_name="Cuenta de usuario",
+        help_text="Cuenta con la que el cliente ingresa a Mi cuenta (opcional)"
+    )
 
     class Meta:
         verbose_name = "Cliente"
@@ -108,12 +120,41 @@ class Cliente(models.Model):
     def __str__(self):
         return f"{self.nombre_cliente} {self.apellido} ({self.run_cliente})"
 
+    @property
+    def telefono_digitos(self):
+        """Teléfono solo con dígitos y código de país (56) para enlaces tel: y WhatsApp"""
+        digitos = re.sub(r'\D', '', self.telefono or '')
+        if len(digitos) == 9:
+            digitos = f"56{digitos}"
+        return digitos
+
+    @property
+    def whatsapp_url(self):
+        return f"https://wa.me/{self.telefono_digitos}" if self.telefono_digitos else ""
+
 
 class Solicitud(models.Model):
     """
     Representa un encargo o pedido personalizado realizado por un cliente en Yummi Catu.
     Relaciona en base de datos al Cliente y al Producto mediante claves foráneas (ForeignKey).
     """
+    ESTADO_PENDIENTE = "pendiente"
+    ESTADO_CONFIRMADA = "confirmada"
+    ESTADO_EN_PREPARACION = "en_preparacion"
+    ESTADO_LISTA = "lista"
+    ESTADO_ENTREGADA = "entregada"
+    ESTADO_CANCELADA = "cancelada"
+    ESTADOS = [
+        (ESTADO_PENDIENTE, "Pendiente"),
+        (ESTADO_CONFIRMADA, "Confirmada"),
+        (ESTADO_EN_PREPARACION, "En preparación"),
+        (ESTADO_LISTA, "Lista para retiro"),
+        (ESTADO_ENTREGADA, "Entregada"),
+        (ESTADO_CANCELADA, "Cancelada"),
+    ]
+    # Estados en los que el pedido todavía no se cierra
+    ESTADOS_EN_CURSO = [ESTADO_PENDIENTE, ESTADO_CONFIRMADA, ESTADO_EN_PREPARACION, ESTADO_LISTA]
+
     id = models.AutoField(
         primary_key=True,
         verbose_name="ID de Solicitud"
@@ -138,6 +179,27 @@ class Solicitud(models.Model):
         auto_now_add=True,
         verbose_name="Fecha y Hora de Creación"
     )
+    estado = models.CharField(
+        max_length=20,
+        choices=ESTADOS,
+        default=ESTADO_PENDIENTE,
+        verbose_name="Estado del Pedido"
+    )
+    cantidad = models.PositiveIntegerField(
+        default=1,
+        verbose_name="Cantidad"
+    )
+    fecha_entrega = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha de Entrega"
+    )
+    precio_unitario = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Precio unitario (CLP)",
+        help_text="Se copia del precio del producto al crear la solicitud"
+    )
 
     class Meta:
         verbose_name = "Solicitud de Encargo"
@@ -146,3 +208,19 @@ class Solicitud(models.Model):
 
     def __str__(self):
         return f"Solicitud #{self.id} - {self.run_cliente.nombre_cliente} ({self.id_producto.nombre})"
+
+    def save(self, *args, **kwargs):
+        # El precio queda congelado al crear la solicitud, aunque el producto cambie después
+        if self._state.adding and self.precio_unitario is None and self.id_producto_id:
+            self.precio_unitario = self.id_producto.precio
+        super().save(*args, **kwargs)
+
+    @property
+    def total(self):
+        if self.precio_unitario is None:
+            return None
+        return self.precio_unitario * self.cantidad
+
+    @property
+    def en_curso(self):
+        return self.estado in self.ESTADOS_EN_CURSO

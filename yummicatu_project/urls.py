@@ -13,6 +13,9 @@ urlpatterns = [
     # Panel de administración de Django (Evaluación 2)
     path('admin/', admin.site.urls),
 
+    # Login, logout, cambio y recuperación de contraseña (django.contrib.auth)
+    path('cuentas/', include('django.contrib.auth.urls')),
+
     # Enrutamiento de la aplicación principal 'reposteria' (Evaluación 1 y 2)
     path('', include('reposteria.urls')),
 ]

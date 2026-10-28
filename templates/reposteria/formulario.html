@@ -21,6 +21,15 @@
         {% csrf_token %}
 
         <div class="form-grid">
+          {% if cliente_cuenta %}
+          <!-- Comprador con cuenta: los datos personales se toman de su ficha de Cliente -->
+          <div class="form-group-full yc-cliente-resumen">
+            Encargando como <strong>{{ cliente_cuenta.nombre_cliente }} {{ cliente_cuenta.apellido }}</strong>
+            (RUN {{ cliente_cuenta.run_cliente }}). Te contactaremos al {{ cliente_cuenta.telefono }}
+            o a {{ cliente_cuenta.correo }}.
+            <a href="{% url 'cuenta:mis_datos' %}" class="yc-link">Actualizar mis datos</a>
+          </div>
+          {% else %}
           <!-- 1. Campo RUN Cliente (Primary Key en el modelo Cliente) -->
           <div>
             <label for="id_run" class="form-label">
@@ -109,25 +118,41 @@
             <span class="form-hint">Te enviaremos el comprobante y el resumen de tu solicitud.</span>
           </div>
 
+          {% endif %}
+
           <!-- 6. Selección de Producto (Clave Foránea hacia Producto) -->
           <div class="form-group-full">
             <label for="id_producto" class="form-label">
               Selecciona tu Producto o Especialidad <span class="required">*</span>
             </label>
             <select name="producto" id="id_producto" class="form-control" required>
-              <option value="" disabled {% if not request.GET.producto %}selected{% endif %}>
+              <option value="" disabled {% if not request.GET.producto and not form_data.producto %}selected{% endif %}>
                 -- Elige una delicia del catálogo --
               </option>
               {% for prod in productos %}
                 <option 
                   value="{{ prod.id }}" 
-                  {% if request.GET.producto == prod.id|stringformat:"s" %}selected{% endif %}
+                  {% if request.GET.producto == prod.id|stringformat:"s" or form_data.producto == prod.id|stringformat:"s" %}selected{% endif %}
                 >
                   🍓 {{ prod.nombre }} ({{ prod.categoria }}) - ${{ prod.precio|default:"4.500" }}
                 </option>
               {% endfor %}
             </select>
             <span class="form-hint">Puedes ver fotos y detalles de cada uno en la sección de Catálogo.</span>
+          </div>
+
+          <!-- Cantidad (opcional, por defecto 1) -->
+          <div>
+            <label for="id_cantidad" class="form-label">Cantidad</label>
+            <input
+              type="number"
+              name="cantidad"
+              id="id_cantidad"
+              class="form-control"
+              min="1"
+              value="{{ form_data.cantidad|default:1 }}"
+            >
+            <span class="form-hint">Unidades del producto elegido.</span>
           </div>
 
           <!-- 7. Detalle del Encargo (Requisito modelo Solicitud) -->

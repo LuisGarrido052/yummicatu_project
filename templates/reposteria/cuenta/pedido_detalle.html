@@ -1,0 +1,25 @@
+{% extends 'reposteria/cuenta/base_cuenta.html' %}
+{% load yummi %}
+
+{% block title %}Pedido #{{ pedido.id }} | Yummi Catu{% endblock %}
+
+{% block contenido_area %}
+<h1 class="yc-area-titulo">Pedido #{{ pedido.id }}</h1>
+<p class="yc-area-subtitulo">Realizado el {{ pedido.fecha|date:"d/m/Y \a \l\a\s H:i" }}</p>
+
+<div class="yc-card">
+  <dl class="yc-datos">
+    <dt>Estado</dt><dd>{% include 'reposteria/_estado.html' %}</dd>
+    <dt>Producto</dt><dd>{{ pedido.id_producto.nombre }} ({{ pedido.id_producto.categoria }})</dd>
+    <dt>Cantidad</dt><dd>{{ pedido.cantidad }}</dd>
+    <dt>Precio unitario</dt><dd>{{ pedido.precio_unitario|clp }}</dd>
+    <dt>Total estimado</dt><dd><strong>{{ pedido.total|clp }}</strong></dd>
+    <dt>Fecha de entrega</dt><dd>{{ pedido.fecha_entrega|date:"d/m/Y"|default:"Por confirmar" }}</dd>
+    <dt>Detalle</dt><dd>{{ pedido.detalle }}</dd>
+  </dl>
+  <div class="yc-acciones">
+    <a href="{% url 'cuenta:repetir_pedido' pedido.pk %}" class="btn-primary">🔁 Repetir este pedido</a>
+    <a href="{% url 'cuenta:pedidos' %}" class="btn-secondary">Volver a mis pedidos</a>
+  </div>
+</div>
+{% endblock %}

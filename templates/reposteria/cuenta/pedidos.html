@@ -1,0 +1,13 @@
+{% extends 'reposteria/cuenta/base_cuenta.html' %}
+
+{% block title %}Mis pedidos | Yummi Catu{% endblock %}
+
+{% block contenido_area %}
+<h1 class="yc-area-titulo">Mis pedidos</h1>
+<p class="yc-area-subtitulo">Historial de todos tus encargos en Yummi Catu.</p>
+
+<div class="yc-card">
+  {% include 'reposteria/cuenta/_tabla_pedidos.html' %}
+  {% include 'reposteria/_paginacion.html' %}
+</div>
+{% endblock %}

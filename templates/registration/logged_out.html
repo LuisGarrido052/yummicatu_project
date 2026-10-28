@@ -1,0 +1,6 @@
+{% extends request.resolver_match.namespace|yesno:"registration/logged_out.html,registration/yummi/logged_out.html" %}
+{% comment %}
+  El admin de Django también renderiza registration/logged_out.html.
+  Dentro de /admin/ se extiende la plantilla original del admin (Django omite este mismo archivo
+  al resolver un extends con el mismo nombre); en el sitio se usa registration/yummi/logged_out.html.
+{% endcomment %}

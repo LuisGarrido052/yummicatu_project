@@ -1,0 +1,31 @@
+{% extends 'reposteria/vendedor/base_vendedor.html' %}
+
+{% block title %}{% if object %}Editar {{ object.nombre }}{% else %}Nuevo producto{% endif %} | Panel vendedor | Yummi Catu{% endblock %}
+
+{% block contenido_area %}
+<h1 class="yc-area-titulo">{% if object %}Editar producto{% else %}Nuevo producto{% endif %}</h1>
+<p class="yc-area-subtitulo">{% if object %}{{ object.nombre }}{% else %}Agrega una nueva delicia al catálogo.{% endif %}</p>
+
+<div class="yc-card">
+  <form method="post" enctype="multipart/form-data" class="yc-form" novalidate>
+    {% csrf_token %}
+    {% include 'reposteria/_errores_form.html' %}
+    <div class="form-grid">
+      {% include 'reposteria/_campo.html' with campo=form.nombre %}
+      {% include 'reposteria/_campo.html' with campo=form.categoria %}
+      {% include 'reposteria/_campo.html' with campo=form.descripcion full=True %}
+      {% include 'reposteria/_campo.html' with campo=form.precio %}
+      {% include 'reposteria/_campo.html' with campo=form.imagen_subida %}
+      {% include 'reposteria/_campo.html' with campo=form.destacado full=True %}
+    </div>
+    {% if object %}
+      <p class="form-hint">Imagen actual:</p>
+      <img src="{{ object.url_imagen }}" alt="{{ object.nombre }}" class="yc-miniatura" style="width: 96px; height: 96px;">
+    {% endif %}
+    <div class="yc-form-actions">
+      <a href="{% url 'vendedor:productos' %}" class="yc-link">Cancelar</a>
+      <button type="submit" class="btn-primary">Guardar producto</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

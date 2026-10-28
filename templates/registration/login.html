@@ -1,0 +1,20 @@
+{% extends 'registration/base_auth.html' %}
+
+{% block title %}Ingresar | Yummi Catu{% endblock %}
+{% block titulo_auth %}Ingresar{% endblock %}
+{% block descripcion %}<p class="section-description">Revisa tus pedidos, repite tus favoritos y encarga más rápido.</p>{% endblock %}
+
+{% block cuerpo %}
+<form method="post" action="{% url 'login' %}" class="yc-form" novalidate>
+  {% csrf_token %}
+  {% include 'reposteria/_errores_form.html' %}
+  {% include 'reposteria/_campo.html' with campo=form.username %}
+  {% include 'reposteria/_campo.html' with campo=form.password %}
+  <input type="hidden" name="next" value="{{ next }}">
+  <div class="yc-form-actions">
+    <a href="{% url 'password_reset' %}" class="yc-link">¿Olvidaste tu contraseña?</a>
+    <button type="submit" class="btn-primary">Ingresar</button>
+  </div>
+</form>
+<p class="yc-form-foot">¿Aún no tienes cuenta? <a href="{% url 'registro' %}" class="yc-link">Crea tu cuenta</a></p>
+{% endblock %}

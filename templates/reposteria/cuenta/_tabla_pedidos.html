@@ -1,0 +1,25 @@
+{% load yummi %}
+<div class="yc-tabla-wrap">
+  <table class="yc-tabla">
+    <thead>
+      <tr>
+        <th>N°</th><th>Fecha</th><th>Producto</th><th class="num">Cant.</th><th class="num">Total</th><th>Estado</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for pedido in pedidos %}
+        <tr>
+          <td>#{{ pedido.id }}</td>
+          <td>{{ pedido.fecha|date:"d/m/Y" }}</td>
+          <td>{{ pedido.id_producto.nombre }}</td>
+          <td class="num">{{ pedido.cantidad }}</td>
+          <td class="num">{{ pedido.total|clp }}</td>
+          <td>{% include 'reposteria/_estado.html' %}</td>
+          <td><a href="{% url 'cuenta:pedido_detalle' pedido.pk %}" class="yc-link">Ver</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7" class="yc-vacio">{{ vacio|default:"Aún no tienes pedidos." }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,26 @@
+{% load yummi %}
+<div class="yc-tabla-wrap">
+  <table class="yc-tabla">
+    <thead>
+      <tr>
+        <th>N°</th><th>Recibida</th><th>Cliente</th><th>Producto</th><th class="num">Cant.</th><th class="num">Total</th><th>Entrega</th><th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for pedido in solicitudes %}
+        <tr>
+          <td><a href="{% url 'vendedor:solicitud_detalle' pedido.pk %}" class="yc-link">#{{ pedido.id }}</a></td>
+          <td>{{ pedido.fecha|date:"d/m/Y H:i" }}</td>
+          <td>{{ pedido.run_cliente.nombre_cliente }} {{ pedido.run_cliente.apellido }}<br><span class="form-hint">{{ pedido.run_cliente.run_cliente }}</span></td>
+          <td>{{ pedido.id_producto.nombre }}<br><span class="form-hint">{{ pedido.id_producto.categoria }}</span></td>
+          <td class="num">{{ pedido.cantidad }}</td>
+          <td class="num">{{ pedido.total|clp }}</td>
+          <td>{{ pedido.fecha_entrega|date:"d/m/Y"|default:"—" }}</td>
+          <td>{% include 'reposteria/_estado.html' %}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="8" class="yc-vacio">{{ vacio|default:"No hay solicitudes con estos filtros." }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

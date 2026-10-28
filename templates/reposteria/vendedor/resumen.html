@@ -1,0 +1,35 @@
+{% extends 'reposteria/vendedor/base_vendedor.html' %}
+{% load yummi %}
+
+{% block title %}Panel vendedor | Yummi Catu{% endblock %}
+
+{% block contenido_area %}
+<h1 class="yc-area-titulo">Resumen</h1>
+<p class="yc-area-subtitulo">Hola, {{ user.first_name|default:user.username }}. Así va la tienda hoy, {{ hoy|date:"l j \d\e F" }}.</p>
+
+<div class="yc-stats">
+  <div class="yc-stat yc-stat-destacado">
+    <strong>{{ pedidos_hoy|length }}</strong>
+    <span>Pedidos recibidos hoy</span>
+  </div>
+  {% for estado in estados %}
+    <a href="{% url 'vendedor:solicitudes' %}?estado={{ estado.clave }}" class="yc-stat">
+      <strong>{{ estado.total }}</strong>
+      <span>{{ estado.nombre }}</span>
+    </a>
+  {% endfor %}
+</div>
+
+<div class="yc-card">
+  <div class="yc-card-head">
+    <h3>Pedidos de hoy</h3>
+    <a href="{% url 'vendedor:solicitudes' %}" class="yc-link">Ver bandeja completa</a>
+  </div>
+  {% include 'reposteria/vendedor/_tabla_solicitudes.html' with solicitudes=pedidos_hoy vacio="Todavía no llegan pedidos hoy." %}
+</div>
+
+<div class="yc-card">
+  <h3>Entregas programadas para hoy</h3>
+  {% include 'reposteria/vendedor/_tabla_solicitudes.html' with solicitudes=entregas_hoy vacio="No hay entregas pendientes para hoy." %}
+</div>
+{% endblock %}

@@ -95,45 +95,94 @@ def galeria(request):
     return render(request, 'reposteria/galeria.html', contexto)
 
 
+def _cliente_de_cuenta(request):
+    """Cliente vinculado al usuario autenticado, o None (visitante anónimo, vendedor sin ficha, etc.)"""
+    if request.user.is_authenticated:
+        return getattr(request.user, 'cliente', None)
+    return None
+
+
+def _leer_cantidad(valor):
+    try:
+        return max(int(valor), 1)
+    except (TypeError, ValueError):
+        return 1
+
+
 def formulario(request):
     """
     Formulario de contacto y encargo de pedidos personalizados (formulario.html).
     GET: Renderiza los campos de solicitud y lista de productos para elegir.
     POST: Procesa la solicitud, crea o actualiza Cliente y Solicitud en BD (Fase 2)
           y despliega mensajes informativos.
+    Compradores con cuenta: sus datos personales se toman de su ficha de Cliente
+    (no se piden en el formulario) y pueden repetir un pedido anterior con ?repetir=<id>.
     """
+    cliente_cuenta = _cliente_de_cuenta(request)
+
     # Cargar productos disponibles para el selector del formulario
-    try:
-        productos = _cargar_productos_json()
-    except Exception:
-        productos = []
+    productos = []
+    if request.user.is_authenticated:
+        productos = list(Producto.objects.all())
+    if not productos:
+        try:
+            productos = _cargar_productos_json()
+        except Exception:
+            productos = []
+
+    contexto = {
+        'titulo': 'Encargos y Pedidos Personalizados | Yummi Catu',
+        'productos': productos,
+        'cliente_cuenta': cliente_cuenta,
+    }
 
     if request.method == 'POST':
-        run = request.POST.get('run', '').strip()
-        nombre = request.POST.get('nombre', '').strip()
-        apellido = request.POST.get('apellido', '').strip()
-        correo = request.POST.get('correo', '').strip()
-        telefono = request.POST.get('telefono', '').strip()
         id_producto = request.POST.get('producto', '').strip()
         detalle = request.POST.get('detalle', '').strip()
+        cantidad = _leer_cantidad(request.POST.get('cantidad'))
+
+        if cliente_cuenta:
+            run = cliente_cuenta.run_cliente
+            nombre = cliente_cuenta.nombre_cliente
+            apellido = cliente_cuenta.apellido
+            correo = cliente_cuenta.correo
+            telefono = cliente_cuenta.telefono
+        else:
+            run = request.POST.get('run', '').strip()
+            nombre = request.POST.get('nombre', '').strip()
+            apellido = request.POST.get('apellido', '').strip()
+            correo = request.POST.get('correo', '').strip()
+            telefono = request.POST.get('telefono', '').strip()
 
         # Validación básica de campos requeridos
         if not all([run, nombre, apellido, correo, telefono, detalle]):
             messages.error(request, 'Por favor, complete todos los campos requeridos del formulario.')
-            return render(request, 'reposteria/formulario.html', {'productos': productos, 'form_data': request.POST})
+            return render(request, 'reposteria/formulario.html', {**contexto, 'form_data': request.POST})
+
+        # Un RUN con cuenta solo puede encargar con su sesión iniciada:
+        # el formulario anónimo no debe sobrescribir los datos de ese cliente.
+        if not cliente_cuenta and Cliente.objects.filter(run_cliente=run, usuario__isnull=False).exists():
+            messages.error(
+                request,
+                'Este RUN está asociado a una cuenta de Yummi Catu. Ingresa con tu usuario para hacer el encargo.'
+            )
+            return render(request, 'reposteria/formulario.html', {**contexto, 'form_data': request.POST})
 
         # Persistencia en Base de Datos (Evaluación 2 - Modelos Relacionales)
         try:
             # 1. Crear o actualizar Cliente identificado por RUN
-            cliente, _ = Cliente.objects.update_or_create(
-                run_cliente=run,
-                defaults={
-                    'nombre_cliente': nombre,
-                    'apellido': apellido,
-                    'correo': correo,
-                    'telefono': telefono
-                }
-            )
+            if cliente_cuenta:
+                cliente = cliente_cuenta
+            else:
+                cliente, _ = Cliente.objects.update_or_create(
+                    run_cliente=run,
+                    defaults={
+                        'nombre_cliente': nombre,
+                        'apellido': apellido,
+                        'correo': correo,
+                        'telefono': telefono
+                    }
+                )
 
             # 2. Obtener producto de la BD (o crearlo si aún no existe en BD)
             producto_obj = None
@@ -155,17 +204,20 @@ def formulario(request):
                     }
                 )
 
-            # 3. Crear el registro Solicitud relacionado
+            # 3. Crear el registro Solicitud relacionado (el precio unitario se copia del producto)
             solicitud = Solicitud.objects.create(
                 run_cliente=cliente,
                 id_producto=producto_obj,
-                detalle=detalle
+                detalle=detalle,
+                cantidad=cantidad
             )
 
             messages.success(
                 request,
                 f'¡Muchas gracias {nombre}! Tu solicitud #{solicitud.id} para "{producto_obj.nombre}" ha sido registrada con éxito. Te contactaremos pronto al {telefono}.'
             )
+            if cliente_cuenta:
+                return redirect('cuenta:pedido_detalle', pk=solicitud.pk)
             return redirect('formulario')
 
         except Exception as error:
@@ -176,8 +228,14 @@ def formulario(request):
             )
             return redirect('formulario')
 
-    contexto = {
-        'titulo': 'Encargos y Pedidos Personalizados | Yummi Catu',
-        'productos': productos,
-    }
+    # Repetir un pedido anterior del propio cliente
+    if cliente_cuenta and request.GET.get('repetir', '').isdigit():
+        pedido = Solicitud.objects.filter(pk=request.GET['repetir'], run_cliente=cliente_cuenta).first()
+        if pedido:
+            contexto['form_data'] = {
+                'producto': str(pedido.id_producto_id),
+                'detalle': pedido.detalle,
+                'cantidad': pedido.cantidad,
+            }
+
     return render(request, 'reposteria/formulario.html', contexto)

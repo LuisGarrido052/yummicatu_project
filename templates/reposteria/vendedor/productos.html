@@ -1,0 +1,44 @@
+{% extends 'reposteria/vendedor/base_vendedor.html' %}
+{% load yummi %}
+
+{% block title %}Productos | Panel vendedor | Yummi Catu{% endblock %}
+
+{% block contenido_area %}
+<h1 class="yc-area-titulo">Productos</h1>
+<p class="yc-area-subtitulo">Catálogo que se ofrece en los encargos.</p>
+
+<div class="yc-card">
+  <div class="yc-card-head">
+    <h3>{{ page_obj.paginator.count }} producto{{ page_obj.paginator.count|pluralize }}</h3>
+    {% if perms.reposteria.add_producto %}
+      <a href="{% url 'vendedor:producto_crear' %}" class="btn-primary">Nuevo producto</a>
+    {% endif %}
+  </div>
+  <div class="yc-tabla-wrap">
+    <table class="yc-tabla">
+      <thead>
+        <tr><th></th><th>Nombre</th><th>Categoría</th><th class="num">Precio</th><th>Destacado</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for producto in productos %}
+          <tr>
+            <td><img src="{{ producto.url_imagen }}" alt="" class="yc-miniatura"></td>
+            <td>{{ producto.nombre }}</td>
+            <td>{{ producto.categoria }}</td>
+            <td class="num">{{ producto.precio|clp }}</td>
+            <td>{{ producto.destacado|yesno:"Sí,No" }}</td>
+            <td>
+              {% if perms.reposteria.change_producto %}
+                <a href="{% url 'vendedor:producto_editar' producto.pk %}" class="yc-link">Editar</a>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="yc-vacio">Aún no hay productos cargados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include 'reposteria/_paginacion.html' %}
+</div>
+{% endblock %}

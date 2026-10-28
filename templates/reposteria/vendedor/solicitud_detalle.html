@@ -1,0 +1,67 @@
+{% extends 'reposteria/vendedor/base_vendedor.html' %}
+{% load yummi %}
+
+{% block title %}Solicitud #{{ solicitud.id }} | Panel vendedor | Yummi Catu{% endblock %}
+
+{% block contenido_area %}
+{% with cliente=solicitud.run_cliente pedido=solicitud %}
+<h1 class="yc-area-titulo">Solicitud #{{ solicitud.id }} {% include 'reposteria/_estado.html' %}</h1>
+<p class="yc-area-subtitulo">Recibida el {{ solicitud.fecha|date:"d/m/Y \a \l\a\s H:i" }}</p>
+
+<div class="yc-grid-2">
+  <div class="yc-card">
+    <h3>Encargo</h3>
+    <dl class="yc-datos">
+      <dt>Producto</dt><dd>{{ solicitud.id_producto.nombre }} ({{ solicitud.id_producto.categoria }})</dd>
+      <dt>Cantidad</dt><dd>{{ solicitud.cantidad }}</dd>
+      <dt>Precio unitario</dt><dd>{{ solicitud.precio_unitario|clp }}</dd>
+      <dt>Total</dt><dd><strong>{{ solicitud.total|clp }}</strong></dd>
+      <dt>Fecha de entrega</dt><dd>{{ solicitud.fecha_entrega|date:"d/m/Y"|default:"Por confirmar" }}</dd>
+      <dt>Detalle</dt><dd>{{ solicitud.detalle }}</dd>
+    </dl>
+  </div>
+
+  <div class="yc-card">
+    <h3>Cliente</h3>
+    <dl class="yc-datos">
+      <dt>Nombre</dt><dd>{{ cliente.nombre_cliente }} {{ cliente.apellido }}</dd>
+      <dt>RUN</dt><dd>{{ cliente.run_cliente }}</dd>
+      <dt>Teléfono</dt><dd><a href="tel:+{{ cliente.telefono_digitos }}" class="yc-link">{{ cliente.telefono }}</a></dd>
+      <dt>Correo</dt><dd>{{ cliente.correo }}</dd>
+      <dt>Cuenta</dt><dd>{% if cliente.usuario_id %}Registrado{% else %}Sin cuenta{% endif %}</dd>
+    </dl>
+    <div class="yc-acciones">
+      {% if cliente.whatsapp_url %}
+        <a href="{{ cliente.whatsapp_url }}" target="_blank" rel="noopener" class="btn-primary">💬 WhatsApp</a>
+      {% endif %}
+      <a href="tel:+{{ cliente.telefono_digitos }}" class="btn-secondary">📞 Llamar</a>
+    </div>
+  </div>
+</div>
+
+{% if form %}
+  <div class="yc-card">
+    <h3>Actualizar pedido</h3>
+    <form method="post" action="{% url 'vendedor:solicitud_estado' solicitud.pk %}" class="yc-form" novalidate>
+      {% csrf_token %}
+      {% include 'reposteria/_errores_form.html' %}
+      <div class="form-grid">
+        {% include 'reposteria/_campo.html' with campo=form.estado %}
+        {% include 'reposteria/_campo.html' with campo=form.fecha_entrega %}
+      </div>
+      <div class="yc-form-actions">
+        <a href="{% url 'vendedor:solicitudes' %}" class="yc-link">Volver a la bandeja</a>
+        <button type="submit" class="btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+{% endif %}
+
+{% if otros_pedidos %}
+  <div class="yc-card">
+    <h3>Otros pedidos de este cliente</h3>
+    {% include 'reposteria/vendedor/_tabla_solicitudes.html' with solicitudes=otros_pedidos %}
+  </div>
+{% endif %}
+{% endwith %}
+{% endblock %}
