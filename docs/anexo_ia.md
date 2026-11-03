@@ -4,7 +4,8 @@ Durante el desarrollo de la Evaluación 3 se usó **Claude** (Anthropic) dentro 
 conectado al repositorio de GitHub. A continuación se transcriben los prompts exactos, en orden
 cronológico, con lo que se hizo con cada respuesta.
 
-> Pendiente del estudiante: adjuntar las capturas de pantalla de cada conversación en `docs/capturas/`.
+> La pauta acepta captura **o transcripción**. Todos los prompts están transcritos textualmente abajo.
+> Las capturas de `docs/capturas/` son evidencia adicional de las conversaciones en Claude.
 
 ## Resumen
 
@@ -118,7 +119,9 @@ FORMA DE TRABAJO
 **Uso de la respuesta:** con este prompt se generaron las áreas `/vendedor/` y `/mi-cuenta/`, el
 registro de compradores, los grupos Vendedores y Compradores y las pruebas automatizadas.
 
-Evidencia: `capturas/prompt2.png`
+Evidencia: transcripción textual (el historial del asistente de VS Code no se conservó). El mismo
+texto está en el documento que Claude entregó en la conversación del prompt 1 (`capturas/prompt1.png`),
+y su resultado es el commit 6d70e7b del repositorio.
 
 ### Prompt 3 · 02-11-2026 (se adjuntó la escala de apreciación en Excel)
 
