@@ -165,9 +165,11 @@ class Solicitud(models.Model):
         related_name="pedidos",
         verbose_name="Cliente Solicitante"
     )
+    # PROTECT: un producto con pedidos no se puede eliminar (integridad referencial).
+    # Así nunca se pierde el historial de encargos al borrar algo del catálogo.
     id_producto = models.ForeignKey(
         Producto,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="solicitudes",
         verbose_name="Producto Solicitado"
     )

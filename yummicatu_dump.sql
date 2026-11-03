@@ -3,6 +3,12 @@
 -- Asignatura: Programación Back End (Evaluación 2)
 -- Motor: MySQL / MariaDB (Puerto 3306)
 -- Codificación: utf8mb4 / utf8mb4_unicode_ci
+--
+-- AVISO (Evaluación 3): este volcado corresponde a la Evaluación 2 y NO incluye
+-- las columnas ni tablas agregadas después (estado, cantidad, fecha_entrega,
+-- precio_unitario, usuario, grupos y permisos). Para instalar el proyecto use:
+--   python manage.py migrate
+--   python manage.py poblar_datos
 -- ========================================================
 
 SET FOREIGN_KEY_CHECKS = 0;

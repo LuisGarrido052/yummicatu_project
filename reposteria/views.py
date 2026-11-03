@@ -5,17 +5,24 @@ Evaluación 1:
 - Vistas para Inicio, Quiénes Somos, Galería (catálogo dinámico) y Formulario de encargos.
 
 Evaluación 2:
-- Integración opcional con modelos ORM (Cliente, Producto, Solicitud) al enviar el formulario.
+- Integración con modelos ORM (Cliente, Producto, Solicitud) al enviar el formulario.
+
+Evaluación 3:
+- La galería y el formulario leen los productos desde la BD (con productos.json como respaldo).
 """
 
 import json
+import logging
 from pathlib import Path
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.conf import settings
+from django.db import DatabaseError
 
-# Importación condicional de modelos ORM para integración con BD (Evaluación 2)
+# Modelos ORM para integración con BD (Evaluación 2 y 3)
 from .models import Producto, Cliente, Solicitud
+
+logger = logging.getLogger(__name__)
 
 
 def _cargar_productos_json():
@@ -65,25 +72,50 @@ def quienes_somos(request):
     return render(request, 'reposteria/quienes_somos.html', contexto)
 
 
+def _cargar_productos():
+    """
+    Productos para las vistas públicas.
+    Evaluación 3 (Read desde la BD): se leen con el ORM desde la tabla Producto, así lo que
+    el vendedor crea, edita o elimina en /vendedor/ se refleja en la galería.
+    Si la BD aún no tiene productos (o no está disponible) se usa productos.json (Evaluación 1).
+    """
+    try:
+        productos = list(Producto.objects.all())
+    except DatabaseError:
+        productos = []
+    if productos:
+        return productos, 'bd'
+    try:
+        return _cargar_productos_json(), 'json'
+    except (OSError, ValueError):
+        return [], 'json'
+
+
+def _campo(producto, nombre):
+    """Lee un campo tanto de un objeto Producto como de un diccionario del JSON"""
+    if isinstance(producto, dict):
+        return producto.get(nombre)
+    return getattr(producto, nombre, None)
+
+
 def galeria(request):
     """
-    REQUISITO ESTRICTO EVALUACIÓN 1:
-    Abre y parsea data/productos.json con la librería json de Python,
-    sin interacción con la base de datos, y envía la lista al contexto
-    para ser renderizada en galeria.html mediante {% for prod in productos %}.
+    Catálogo público (galeria.html).
+    Lee los productos desde la base de datos (Evaluación 3) y, si está vacía,
+    abre y parsea data/productos.json con la librería json (Evaluación 1).
+    La lista se renderiza en galeria.html mediante {% for prod in productos %}.
     """
-    # 1. Abrir y parsear el archivo JSON utilizando la librería json
-    productos = _cargar_productos_json()
+    productos, origen = _cargar_productos()
 
-    # Opcional: Filtrado simple por categoría si viene por parámetro GET
+    # Filtrado simple por categoría si viene por parámetro GET
     categoria_filtro = request.GET.get('categoria', 'todas')
     if categoria_filtro != 'todas':
-        productos_filtrados = [p for p in productos if p.get('categoria') == categoria_filtro]
+        productos_filtrados = [p for p in productos if _campo(p, 'categoria') == categoria_filtro]
     else:
         productos_filtrados = productos
 
     # Obtener categorías únicas para los botones de filtro
-    categorias = sorted(list({p.get('categoria') for p in productos}))
+    categorias = sorted({_campo(p, 'categoria') for p in productos if _campo(p, 'categoria')})
 
     contexto = {
         'titulo': 'Galería de Repostería & Frutillas | Yummi Catu',
@@ -91,6 +123,7 @@ def galeria(request):
         'categorias': categorias,
         'categoria_activa': categoria_filtro,
         'total_productos': len(productos_filtrados),
+        'origen_productos': origen,
     }
     return render(request, 'reposteria/galeria.html', contexto)
 
@@ -120,15 +153,8 @@ def formulario(request):
     """
     cliente_cuenta = _cliente_de_cuenta(request)
 
-    # Cargar productos disponibles para el selector del formulario
-    productos = []
-    if request.user.is_authenticated:
-        productos = list(Producto.objects.all())
-    if not productos:
-        try:
-            productos = _cargar_productos_json()
-        except Exception:
-            productos = []
+    # Cargar productos disponibles para el selector del formulario (BD, o JSON si está vacía)
+    productos, _ = _cargar_productos()
 
     contexto = {
         'titulo': 'Encargos y Pedidos Personalizados | Yummi Catu',
@@ -220,13 +246,15 @@ def formulario(request):
                 return redirect('cuenta:pedido_detalle', pk=solicitud.pk)
             return redirect('formulario')
 
-        except Exception as error:
-            # Si aún no se han aplicado migraciones o se está evaluando Fase 1 sin BD:
-            messages.success(
+        except DatabaseError:
+            # No se informa un éxito falso: si la BD falla, el encargo NO quedó guardado
+            logger.exception('No se pudo guardar la solicitud del formulario de encargos')
+            messages.error(
                 request,
-                f'¡Solicitud recibida correctamente! Gracias {nombre}, nos contactaremos contigo al correo {correo} para confirmar tu encargo.'
+                'No pudimos registrar tu solicitud por un problema técnico. Inténtalo nuevamente '
+                'o escríbenos por WhatsApp.'
             )
-            return redirect('formulario')
+            return render(request, 'reposteria/formulario.html', {**contexto, 'form_data': request.POST})
 
     # Repetir un pedido anterior del propio cliente
     if cliente_cuenta and request.GET.get('repetir', '').isdigit():

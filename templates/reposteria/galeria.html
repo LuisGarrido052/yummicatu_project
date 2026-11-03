@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static yummi %}
 
 {% block title %}{{ titulo|default:"Galería de Productos | Yummi Catu" }}{% endblock %}
 
@@ -11,7 +11,7 @@
     <h1 class="section-title">Nuestra Vitrina Dulce</h1>
     <p class="section-description">
       Explora nuestras especialidades artesanales preparadas con ingredientes frescos y amor.
-      Esta vitrina es generada dinámicamente consumiendo y parseando los datos desde <code>productos.json</code> (Evaluación 1).
+      Esta vitrina se genera dinámicamente desde la base de datos{% if origen_productos == 'json' %} (respaldo: <code>productos.json</code>, Evaluación 1){% endif %}.
     </p>
   </div>
 
@@ -40,7 +40,7 @@
         <!-- 1. Campo 'foto': Ruta local estática renderizada con la etiqueta static -->
         <div class="product-image-wrap">
           <img 
-            src="{% static prod.foto %}" 
+            src="{% if prod.url_imagen %}{{ prod.url_imagen }}{% else %}{% static prod.foto %}{% endif %}" 
             alt="{{ prod.nombre }}" 
             loading="lazy"
           >
@@ -58,7 +58,7 @@
           <p class="product-card-desc">{{ prod.descripcion }}</p>
 
           <div class="product-card-footer">
-            <span class="product-price">${{ prod.precio|default:"4.500" }}</span>
+            <span class="product-price">{{ prod.precio|default:4500|clp }}</span>
             <a href="{% url 'formulario' %}?producto={{ prod.id }}" class="btn-card-order" title="Encargar {{ prod.nombre }}">
               Encargar →
             </a>
@@ -79,13 +79,14 @@
   <div style="max-width: 1200px; margin: 4rem auto 0; padding: 1.5rem 2rem; background: #fff; border-radius: 18px; border-left: 5px solid var(--color-primary); box-shadow: var(--shadow-sm);">
     <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.5rem;">
       <span style="font-size: 1.3rem;">ℹ️</span>
-      <strong style="color: var(--color-chocolate); font-size: 1rem;">Detalle Técnico de Implementación (Evaluación 1):</strong>
+      <strong style="color: var(--color-chocolate); font-size: 1rem;">Detalle Técnico de Implementación:</strong>
     </div>
     <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0; line-height: 1.6;">
-      Esta vista (<code>views.galeria</code>) lee directamente el archivo <code>data/productos.json</code> mediante la función nativa 
-      <code>json.load()</code> de Python y transfiere la lista resultante al contexto del Django Template Language (DTL). 
-      El ciclo <code>for prod in productos</code> itera sobre cada diccionario inyectando en el DOM los cuatro atributos 
-      estrictamente requeridos: <strong>nombre</strong>, <strong>categoría</strong>, <strong>descripción</strong> y la ruta estática de <strong>foto</strong>.
+      Esta vista (<code>views.galeria</code>) lee los productos desde la tabla <code>Producto</code> con el ORM de Django
+      (<code>Producto.objects.all()</code>), por lo que los cambios hechos en el panel del vendedor se ven aquí al instante.
+      Si la base de datos aún no tiene productos, usa como respaldo <code>data/productos.json</code> leído con <code>json.load()</code>
+      (Evaluación 1). El ciclo <code>for prod in productos</code> muestra los atributos <strong>nombre</strong>,
+      <strong>categoría</strong>, <strong>descripción</strong> y <strong>foto</strong>.
     </p>
   </div>
 </section>

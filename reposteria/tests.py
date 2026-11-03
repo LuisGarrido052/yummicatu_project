@@ -59,7 +59,8 @@ class GruposYModelosTests(BaseRolesTestCase):
         vendedores = Group.objects.get(name='Vendedores')
         self.assertEqual(
             set(vendedores.permissions.values_list('codename', flat=True)),
-            {'view_solicitud', 'change_solicitud', 'view_cliente', 'view_producto', 'add_producto', 'change_producto'},
+            {'view_solicitud', 'change_solicitud', 'view_cliente', 'view_producto', 'add_producto', 'change_producto',
+             'delete_producto'},
         )
         self.assertFalse(Group.objects.get(name='Compradores').permissions.exists())
 
@@ -297,6 +298,7 @@ class PanelVendedorTests(BaseRolesTestCase):
             reverse('vendedor:productos'),
             reverse('vendedor:producto_crear'),
             reverse('vendedor:producto_editar', args=[self.producto.pk]),
+            reverse('vendedor:producto_eliminar', args=[self.producto.pk]),
             reverse('vendedor:clientes'),
         ]
 
@@ -390,11 +392,53 @@ class PanelVendedorTests(BaseRolesTestCase):
         self.assertEqual(kuchen.precio, 12500)
         self.assertTrue(kuchen.destacado)
 
+    def test_vendedor_elimina_producto_sin_pedidos(self):
+        sin_pedidos = Producto.objects.create(nombre='Alfajor', categoria='Dulces', descripcion='Manjar', precio=1500)
+        self.client.force_login(self.vendedor)
+        confirmacion = self.client.get(reverse('vendedor:producto_eliminar', args=[sin_pedidos.pk]))
+        self.assertContains(confirmacion, 'Sí, eliminar')
+        respuesta = self.client.post(reverse('vendedor:producto_eliminar', args=[sin_pedidos.pk]))
+        self.assertRedirects(respuesta, reverse('vendedor:productos'))
+        self.assertFalse(Producto.objects.filter(pk=sin_pedidos.pk).exists())
+
+    def test_no_se_elimina_producto_con_pedidos(self):
+        self.client.force_login(self.vendedor)
+        confirmacion = self.client.get(reverse('vendedor:producto_eliminar', args=[self.producto.pk]))
+        self.assertContains(confirmacion, 'No se puede eliminar este producto')
+        self.assertNotContains(confirmacion, 'Sí, eliminar')
+        respuesta = self.client.post(reverse('vendedor:producto_eliminar', args=[self.producto.pk]), follow=True)
+        self.assertRedirects(respuesta, reverse('vendedor:productos'))
+        self.assertContains(respuesta, 'tiene 1 pedido asociado')
+        self.assertTrue(Producto.objects.filter(pk=self.producto.pk).exists())
+        self.assertTrue(Solicitud.objects.filter(pk=self.pedido.pk).exists())
+
+    def test_comprador_y_anonimo_no_eliminan_productos(self):
+        url = reverse('vendedor:producto_eliminar', args=[self.otro_producto.pk])
+        self.assertRedirects(self.client.post(url), f"{reverse('login')}?next={url}")
+        self.client.force_login(self.comprador)
+        self.assertEqual(self.client.post(url).status_code, 403)
+        self.assertTrue(Producto.objects.filter(pk=self.otro_producto.pk).exists())
+
     def test_clientes_con_cantidad_de_pedidos(self):
         self.client.force_login(self.vendedor)
         respuesta = self.client.get(reverse('vendedor:clientes'))
         totales = {c.run_cliente: c.total_pedidos for c in respuesta.context['clientes']}
         self.assertEqual(totales, {'11111111-1': 1, '22222222-2': 1})
+
+
+class GaleriaTests(BaseRolesTestCase):
+    def test_galeria_lee_productos_desde_la_bd(self):
+        respuesta = self.client.get(reverse('galeria'))
+        self.assertEqual(respuesta.context['origen_productos'], 'bd')
+        self.assertContains(respuesta, 'Torta Tres Leches Catu')
+        self.assertContains(respuesta, '$18.900')
+
+    def test_galeria_usa_json_si_la_bd_esta_vacia(self):
+        Solicitud.objects.all().delete()
+        Producto.objects.all().delete()
+        respuesta = self.client.get(reverse('galeria'))
+        self.assertEqual(respuesta.context['origen_productos'], 'json')
+        self.assertTrue(respuesta.context['productos'])
 
 
 class NavegacionTests(BaseRolesTestCase):
