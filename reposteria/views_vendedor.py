@@ -3,19 +3,23 @@ Vistas del panel del vendedor (/vendedor/).
 Acceso por permisos del grupo "Vendedores" (los superusuarios tienen todos los permisos):
 - Resumen y bandeja de solicitudes: reposteria.view_solicitud
 - Cambio de estado y fecha de entrega: reposteria.change_solicitud
-- Productos: view_producto / add_producto / change_producto (sin borrar)
+- Productos: view_producto / add_producto / change_producto / delete_producto
+  (un producto con pedidos no se elimina: Solicitud.id_producto es PROTECT)
 - Clientes: view_cliente (solo lectura)
 """
 
 from datetime import date
 from urllib.parse import urlencode
 
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import ProtectedError
 from django.db.models import Case, Count, IntegerField, Q, Value, When
+from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.dateparse import parse_date
-from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 
 from .forms import ProductoForm, SolicitudGestionForm
 from .models import Cliente, Producto, Solicitud
@@ -168,6 +172,40 @@ class ProductoUpdateView(VendedorMixin, SuccessMessageMixin, UpdateView):
     template_name = 'reposteria/vendedor/producto_form.html'
     success_url = reverse_lazy('vendedor:productos')
     success_message = 'Producto "%(nombre)s" actualizado.'
+
+
+class ProductoDeleteView(VendedorMixin, DeleteView):
+    """
+    Eliminación de productos con validación de integridad:
+    - GET: página de confirmación que muestra cuántos pedidos tiene el producto.
+    - POST: si tiene pedidos asociados, la BD lo impide (PROTECT -> ProtectedError)
+      y se informa al vendedor sin borrar nada; si no tiene, se elimina.
+    """
+    permission_required = 'reposteria.delete_producto'
+    model = Producto
+    template_name = 'reposteria/vendedor/producto_confirmar_eliminar.html'
+    context_object_name = 'producto'
+    success_url = reverse_lazy('vendedor:productos')
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        contexto['total_pedidos'] = self.object.solicitudes.count()
+        return contexto
+
+    def form_valid(self, form):
+        nombre = self.object.nombre
+        try:
+            self.object.delete()
+        except ProtectedError:
+            total = self.object.solicitudes.count()
+            messages.error(
+                self.request,
+                f'No se puede eliminar "{nombre}": tiene {total} pedido{"s" if total != 1 else ""} asociado{"s" if total != 1 else ""}. '
+                'Puedes editarlo y quitarlo de destacados en lugar de borrarlo.'
+            )
+            return redirect('vendedor:productos')
+        messages.success(self.request, f'Producto "{nombre}" eliminado.')
+        return redirect(self.success_url)
 
 
 class ClienteListView(VendedorMixin, ListView):

@@ -9,7 +9,7 @@
       <li><a href="{% url 'vendedor:resumen' %}" class="{% if nombre == 'resumen' %}active{% endif %}">Resumen</a></li>
       <li><a href="{% url 'vendedor:solicitudes' %}" class="{% if nombre == 'solicitudes' or nombre == 'solicitud_detalle' or nombre == 'solicitud_estado' %}active{% endif %}">Solicitudes</a></li>
       {% if perms.reposteria.view_producto %}
-        <li><a href="{% url 'vendedor:productos' %}" class="{% if nombre == 'productos' or nombre == 'producto_crear' or nombre == 'producto_editar' %}active{% endif %}">Productos</a></li>
+        <li><a href="{% url 'vendedor:productos' %}" class="{% if nombre == 'productos' or nombre == 'producto_crear' or nombre == 'producto_editar' or nombre == 'producto_eliminar' %}active{% endif %}">Productos</a></li>
       {% endif %}
       {% if perms.reposteria.view_cliente %}
         <li><a href="{% url 'vendedor:clientes' %}" class="{% if nombre == 'clientes' %}active{% endif %}">Clientes</a></li>

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static yummi %}
 
 {% block title %}Encargos y Pedidos Personalizados | Yummi Catu{% endblock %}
 
@@ -134,7 +134,7 @@
                   value="{{ prod.id }}" 
                   {% if request.GET.producto == prod.id|stringformat:"s" or form_data.producto == prod.id|stringformat:"s" %}selected{% endif %}
                 >
-                  🍓 {{ prod.nombre }} ({{ prod.categoria }}) - ${{ prod.precio|default:"4.500" }}
+                  🍓 {{ prod.nombre }} ({{ prod.categoria }}) - {{ prod.precio|default:4500|clp }}
                 </option>
               {% endfor %}
             </select>

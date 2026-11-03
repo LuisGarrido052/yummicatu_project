@@ -31,6 +31,9 @@
               {% if perms.reposteria.change_producto %}
                 <a href="{% url 'vendedor:producto_editar' producto.pk %}" class="yc-link">Editar</a>
               {% endif %}
+              {% if perms.reposteria.delete_producto %}
+                <a href="{% url 'vendedor:producto_eliminar' producto.pk %}" class="yc-link yc-link-peligro">Eliminar</a>
+              {% endif %}
             </td>
           </tr>
         {% empty %}
