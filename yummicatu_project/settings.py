@@ -4,18 +4,48 @@ Proyecto: Yummi Catu - Repostería Artesanal y Frutillas con Crema
 Asignatura: Programación Back End (Evaluación 1 y Evaluación 2)
 """
 
+import os
 from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
+from dotenv import load_dotenv
 
 # 1. Definición de directorios base
 # BASE_DIR apunta a la raíz del proyecto (donde se ubica manage.py)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 2. Clave Secreta y Modo Debug definidos directamente en la configuración
-SECRET_KEY = 'django-insecure-yummicatu-reposteria-artesanal-super-secret-key-2026'
+# 2. Variables de entorno (Evaluación 3 - configuración segura)
+# Los valores sensibles (clave secreta, credenciales de la BD) se leen desde el archivo .env,
+# que NO se sube al repositorio (.gitignore). La plantilla con los nombres de las variables
+# está en .env.example.
+load_dotenv(BASE_DIR / '.env')
 
-DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+def env(nombre, defecto=None):
+    """Lee una variable de entorno; si no tiene valor por defecto y no existe, detiene el arranque."""
+    valor = os.environ.get(nombre, defecto)
+    if valor is None:
+        raise ImproperlyConfigured(
+            f'Falta la variable de entorno {nombre}. Copia .env.example como .env y complétalo.'
+        )
+    return valor
+
+
+def env_bool(nombre, defecto='False'):
+    return env(nombre, defecto).strip().lower() in ('1', 'true', 'yes', 'si', 'sí')
+
+
+def env_lista(nombre, defecto=''):
+    return [item.strip() for item in env(nombre, defecto).split(',') if item.strip()]
+
+
+# La clave secreta es obligatoria: sin .env el proyecto no arranca
+SECRET_KEY = env('SECRET_KEY')
+
+# Por seguridad, DEBUG queda apagado salvo que el .env diga lo contrario
+DEBUG = env_bool('DEBUG', 'False')
+
+ALLOWED_HOSTS = env_lista('ALLOWED_HOSTS', 'localhost,127.0.0.1')
 
 
 # 4. Registro de Aplicaciones (INSTALLED_APPS)
@@ -72,23 +102,23 @@ WSGI_APPLICATION = 'yummicatu_project.wsgi.application'
 
 
 # 6. Configuración de Base de Datos (Evaluación 2 - MySQL / MariaDB en XAMPP)
-# Se conecta a MySQL (puerto 3306, usuario root sin contraseña en XAMPP).
+# Nombre, usuario, contraseña, host y puerto vienen del .env (nunca escritos en el código).
+# Se utiliza el backend nativo mysql emulado vía PyMySQL en __init__.py
 
 DATABASES = {
-        'default': {
-            # Se utiliza el backend nativo mysql emulado vía PyMySQL en __init__.py
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'yummicatu_db',
-            'USER': 'root',
-            'PASSWORD': '',
-            'HOST': 'localhost',
-            'PORT': '3306',
-            'OPTIONS': {
-                'charset': 'utf8mb4',
-                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            },
-        }
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD', ''),
+        'HOST': env('DB_HOST', 'localhost'),
+        'PORT': env('DB_PORT', '3306'),
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
+}
 
 
 # 7. Validadores de contraseñas de Django

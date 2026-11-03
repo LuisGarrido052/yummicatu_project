@@ -2,6 +2,9 @@
 Django>=5.0.0,<7.0.0
 pillow>=10.0.0
 
+# Lectura del archivo .env (variables de entorno, Evaluación 3)
+python-dotenv>=1.0.0
+
 # Conector MySQL / MariaDB compatible con XAMPP en Windows (Evaluación 2):
 pymysql>=1.1.0
 
