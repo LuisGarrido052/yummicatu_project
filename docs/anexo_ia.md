@@ -11,7 +11,7 @@ cronológico, con lo que se hizo con cada respuesta.
 | N° | Fecha (hora de Chile) | Prompt (resumen) | Resultado |
 | --- | --- | --- | --- |
 | 1 | 28-10-2026, 15:01 | Leer el repo, sacar el modelo de negocio y generar un prompt para las vistas de vendedor y comprador | Documento con modelo de negocio, roles y el prompt N° 2 |
-| 2 | 28-10-2026 | Prompt generado por Claude para implementar las vistas | Áreas `/vendedor/` y `/mi-cuenta/`, registro, grupos y tests (commit 6d70e7b) |
+| 2 | 28-10-2026 | Prompt generado por Claude y pegado en el asistente de IA de VS Code para implementar las vistas | Áreas `/vendedor/` y `/mi-cuenta/`, registro, grupos y tests (commit 6d70e7b) |
 | 3 | 02-11-2026, 21:52 | Revisar el repo contra la escala de apreciación | Informe por indicador con prioridades |
 | 4 | 02-11-2026, 22:05 | Implementar las mejoras | Variables de entorno, eliminar productos con integridad, galería desde la BD, README y este anexo (PR #1) |
 | 5 | 02-11-2026, 22:13 | Pedir el link para dar acceso al repositorio | Enlace de instalación de la app de GitHub |
@@ -32,7 +32,7 @@ Evidencia: `capturas/prompt1.png`
 
 ### Prompt 2 · 28-10-2026 · prompt generado por Claude y usado para implementar
 
-> Pendiente del estudiante: indicar en qué herramienta se pegó este prompt.
+**Herramienta:** se pegó tal cual en el asistente de IA de Visual Studio Code, que implementó los cambios sobre el repositorio.
 
 <details>
 <summary>Ver el prompt completo</summary>
