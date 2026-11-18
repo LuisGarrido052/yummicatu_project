@@ -120,6 +120,9 @@ DATABASES = {
         'OPTIONS': {
             'charset': 'utf8mb4',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'connect_timeout': 3,
+            'read_timeout': 5,
+            'write_timeout': 5,
         },
     },
     'sqlite_fallback': {

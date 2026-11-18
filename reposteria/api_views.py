@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from .models import Solicitud
 from .resilience import cargar_productos_publicos, database_available
 from .serializers import ProductoPublicSerializer, SolicitudPropiaSerializer
+from .service_status import collect_service_status
 
 
 @api_view(['GET'])
@@ -62,3 +63,9 @@ def solicitudes_vendedor_api(request):
 def estado_api(request):
     disponible = database_available()
     return Response({'database': 'available' if disponible else 'unavailable', 'public_catalog_cache': 'enabled'})
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def estado_servicios_api(request):
+    return Response(collect_service_status())

@@ -39,6 +39,7 @@ urlpatterns = [
 
     # API REST (serialización pública y datos privados autorizados)
     path('api/estado/', api_views.estado_api, name='api_estado'),
+    path('api/estado-servicios/', api_views.estado_servicios_api, name='api_estado_servicios'),
     path('api/productos/', api_views.productos_api, name='api_productos'),
     path('api/productos/<int:pk>/', api_views.producto_api, name='api_producto'),
     path('api/mis-solicitudes/', api_views.mis_solicitudes_api, name='api_mis_solicitudes'),
