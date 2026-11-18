@@ -14,7 +14,7 @@ Rutas exigidas por la pauta de Evaluación 1:
 """
 
 from django.urls import include, path
-from . import views, views_cuenta
+from . import api_views, views, views_cuenta
 
 urlpatterns = [
     # Ruta raíz / (Página de inicio)
@@ -36,4 +36,11 @@ urlpatterns = [
     # Áreas privadas
     path('mi-cuenta/', include('reposteria.urls_cuenta')),
     path('vendedor/', include('reposteria.urls_vendedor')),
+
+    # API REST (serialización pública y datos privados autorizados)
+    path('api/estado/', api_views.estado_api, name='api_estado'),
+    path('api/productos/', api_views.productos_api, name='api_productos'),
+    path('api/productos/<int:pk>/', api_views.producto_api, name='api_producto'),
+    path('api/mis-solicitudes/', api_views.mis_solicitudes_api, name='api_mis_solicitudes'),
+    path('api/solicitudes/', api_views.solicitudes_vendedor_api, name='api_solicitudes'),
 ]

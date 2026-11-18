@@ -3,7 +3,10 @@ Pruebas de roles y áreas de Yummi Catu.
 Ejecutar sin MySQL: python manage.py test --settings=yummicatu_project.settings_test
 """
 
+from unittest.mock import patch
+
 from django.contrib.auth.models import Group, User
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
@@ -480,3 +483,57 @@ class AdminTests(BaseRolesTestCase):
         for modelo in ['producto', 'cliente', 'solicitud']:
             with self.subTest(modelo=modelo):
                 self.assertEqual(self.client.get(reverse(f'admin:reposteria_{modelo}_changelist')).status_code, 200)
+
+
+class ResilienciaCacheApiTests(BaseRolesTestCase):
+    def setUp(self):
+        cache.clear()
+
+    def test_api_publica_serializa_catalogo(self):
+        respuesta = self.client.get(reverse('api_productos'))
+        self.assertEqual(respuesta.status_code, 200)
+        cuerpo = respuesta.json()
+        self.assertEqual(cuerpo['origen'], 'bd')
+        self.assertTrue(cuerpo['resultados'])
+        self.assertNotIn('usuario', cuerpo['resultados'][0])
+
+    def test_cache_persistente_se_usa_si_mysql_falla(self):
+        from .resilience import cargar_productos_publicos, PRODUCTS_CACHE_KEY
+
+        datos, origen = cargar_productos_publicos()
+        self.assertEqual(origen, 'bd')
+        self.assertTrue(cache.get(PRODUCTS_CACHE_KEY))
+
+        with patch('reposteria.resilience.database_available', return_value=False):
+            datos, origen = cargar_productos_publicos()
+        self.assertEqual(origen, 'cache')
+        self.assertTrue(datos)
+
+    def test_solicitudes_propias_no_exponen_otro_comprador(self):
+        self.client.force_login(self.comprador)
+        respuesta = self.client.get(reverse('api_mis_solicitudes'))
+        self.assertEqual(respuesta.status_code, 200)
+        ids = {item['id'] for item in respuesta.json()}
+        self.assertIn(self.pedido.pk, ids)
+        self.assertNotIn(self.pedido_ajeno.pk, ids)
+
+    def test_vendedor_no_autorizado_no_consulta_solicitudes_por_api(self):
+        usuario = User.objects.create_user('sin_permiso', 'sin@correo.cl', CLAVE)
+        self.client.force_login(usuario)
+        respuesta = self.client.get(reverse('api_solicitudes'))
+        self.assertEqual(respuesta.status_code, 403)
+
+    def test_post_formulario_se_bloquea_sin_mysql(self):
+        with patch('reposteria.middleware.database_available', return_value=False):
+            respuesta = self.client.post(reverse('formulario'), {
+                'run': '33333333-3', 'nombre': 'Daniela', 'apellido': 'Rojas',
+                'correo': 'dani@correo.cl', 'telefono': '+56955555555',
+                'producto': str(self.producto.pk), 'detalle': 'Encargo que no debe persistirse',
+            })
+        self.assertEqual(respuesta.status_code, 302)
+        self.assertFalse(Cliente.objects.filter(run_cliente='33333333-3').exists())
+
+    def test_estado_reporta_base_disponible(self):
+        respuesta = self.client.get(reverse('api_estado'))
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertIn(respuesta.json()['database'], ('available', 'unavailable'))

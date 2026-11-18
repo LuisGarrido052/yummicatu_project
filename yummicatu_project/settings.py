@@ -60,6 +60,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # API REST para serialización y consumo controlado de datos
+    'rest_framework',
+
     # Aplicación principal del negocio Yummi Catu
     'reposteria.apps.ReposteriaConfig',
 ]
@@ -72,6 +75,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'reposteria.middleware.DatabaseWriteProtectionMiddleware',
 ]
 
 ROOT_URLCONF = 'yummicatu_project.urls'
@@ -176,3 +180,24 @@ LOGOUT_REDIRECT_URL = 'index'
 # En desarrollo los correos de recuperación de contraseña se muestran en la consola
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'Yummi Catu <contacto@yummicatu.cl>'
+
+# Caché persistente independiente de MySQL. Puede sobrevivir reinicios de Django.
+CACHE_DIR = BASE_DIR / 'data' / 'cache'
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': str(CACHE_DIR),
+        'TIMEOUT': 60 * 60 * 24,
+        'OPTIONS': {'MAX_ENTRIES': 1000},
+    }
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+}

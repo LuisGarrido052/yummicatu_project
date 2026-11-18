@@ -11,7 +11,7 @@
     <h1 class="section-title">Nuestra Vitrina Dulce</h1>
     <p class="section-description">
       Explora nuestras especialidades artesanales preparadas con ingredientes frescos y amor.
-      Esta vitrina se genera dinámicamente desde la base de datos{% if origen_productos == 'json' %} (respaldo: <code>productos.json</code>, Evaluación 1){% endif %}.
+      Esta vitrina se genera dinámicamente desde la base de datos{% if origen_productos == 'cache' %} (mostrando la última copia conservada por caché persistente){% elif origen_productos == 'json' %} (respaldo: <code>productos.json</code>, Evaluación 1){% endif %}.
     </p>
   </div>
 

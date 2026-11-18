@@ -21,6 +21,7 @@ from django.db import DatabaseError
 
 # Modelos ORM para integración con BD (Evaluación 2 y 3)
 from .models import Producto, Cliente, Solicitud
+from .resilience import cargar_productos_publicos
 
 logger = logging.getLogger(__name__)
 
@@ -46,16 +47,14 @@ def index(request):
     Presenta banner de bienvenida (hero), especialidad de frutillas con crema,
     y productos estrella del día.
     """
-    try:
-        productos = _cargar_productos_json()
-        # Seleccionar productos destacados para el inicio
-        productos_destacados = [p for p in productos if p.get('destacado', True)][:3]
-    except Exception as e:
-        productos_destacados = []
+    productos, origen = cargar_productos_publicos()
+    # Seleccionar productos destacados para el inicio
+    productos_destacados = [p for p in productos if _campo(p, 'destacado')][:3]
 
     contexto = {
         'titulo': 'Inicio | Yummi Catu - Frutillas con Crema & Repostería',
         'productos_destacados': productos_destacados,
+        'origen_productos': origen,
     }
     return render(request, 'reposteria/index.html', contexto)
 
@@ -73,22 +72,8 @@ def quienes_somos(request):
 
 
 def _cargar_productos():
-    """
-    Productos para las vistas públicas.
-    Evaluación 3 (Read desde la BD): se leen con el ORM desde la tabla Producto, así lo que
-    el vendedor crea, edita o elimina en /vendedor/ se refleja en la galería.
-    Si la BD aún no tiene productos (o no está disponible) se usa productos.json (Evaluación 1).
-    """
-    try:
-        productos = list(Producto.objects.all())
-    except DatabaseError:
-        productos = []
-    if productos:
-        return productos, 'bd'
-    try:
-        return _cargar_productos_json(), 'json'
-    except (OSError, ValueError):
-        return [], 'json'
+    """Productos públicos con MySQL, caché persistente y JSON como respaldo."""
+    return cargar_productos_publicos()
 
 
 def _campo(producto, nombre):
@@ -105,7 +90,7 @@ def galeria(request):
     abre y parsea data/productos.json con la librería json (Evaluación 1).
     La lista se renderiza en galeria.html mediante {% for prod in productos %}.
     """
-    productos, origen = _cargar_productos()
+    productos, origen = cargar_productos_publicos()
 
     # Filtrado simple por categoría si viene por parámetro GET
     categoria_filtro = request.GET.get('categoria', 'todas')
