@@ -7,7 +7,7 @@ class DatabaseWriteProtectionMiddleware:
     """Impide operaciones que no pueden persistirse si MySQL está caído."""
 
     PREFIJOS_ESCRITURA = (
-        '/admin/', '/cuentas/', '/mi-cuenta/', '/vendedor/', '/formulario/',
+        '/admin/', '/cuentas/', '/mi-cuenta/', '/vendedor/',
         '/api/mis-solicitudes/', '/api/solicitudes/',
     )
 

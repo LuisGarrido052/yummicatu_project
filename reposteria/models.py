@@ -7,6 +7,7 @@ Requisito Evaluación 2:
 """
 
 import re
+import uuid
 
 from django.conf import settings
 from django.db import models
@@ -226,3 +227,54 @@ class Solicitud(models.Model):
     @property
     def en_curso(self):
         return self.estado in self.ESTADOS_EN_CURSO
+
+
+class OperacionPendiente(models.Model):
+    """
+    Representa una operación pendiente en el sistema, útil para recuperar el estado
+    de un pedido en caso de fallos o caídas del sistema.
+    """
+    idempotency_key = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        verbose_name="Clave de Idempotencia"
+    )
+    solicitud = models.ForeignKey(
+        Solicitud,
+        on_delete=models.SET_NULL,
+        related_name="operaciones_pendientes",
+        null=True,
+        blank=True,
+        verbose_name="Solicitud relacionada"
+    )
+    payload = models.JSONField(
+        default=dict,
+        verbose_name="Datos pendientes"
+    )
+    estado = models.CharField(
+        max_length=20,
+        choices=[
+            ('pendiente', 'Pendiente'),
+            ('sincronizada', 'Sincronizada'),
+            ('fallida', 'Fallida'),
+        ],
+        default='pendiente',
+        verbose_name="Estado de la operación"
+    )
+    fecha_creacion = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Fecha y Hora de Creación"
+    )
+    fecha_actualizacion = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Fecha y Hora de Última Actualización"
+    )
+
+    class Meta:
+        verbose_name = "Operación Pendiente"
+        verbose_name_plural = "Operaciones Pendientes"
+        ordering = ['-fecha_creacion']
+
+    def __str__(self):
+        return f"Operación {self.idempotency_key} - Solicitud #{self.solicitud.id}"

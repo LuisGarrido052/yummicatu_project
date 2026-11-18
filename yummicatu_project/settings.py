@@ -121,6 +121,10 @@ DATABASES = {
             'charset': 'utf8mb4',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
+    },
+    'sqlite_fallback': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': str(BASE_DIR / 'data' / 'sqlite' / 'yummicatu_fallback.sqlite3'),
     }
 }
 
@@ -183,7 +187,9 @@ DEFAULT_FROM_EMAIL = 'Yummi Catu <contacto@yummicatu.cl>'
 
 # Caché persistente independiente de MySQL. Puede sobrevivir reinicios de Django.
 CACHE_DIR = BASE_DIR / 'data' / 'cache'
+SQLITE_FALLBACK_DIR = BASE_DIR / 'data' / 'sqlite'
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
+SQLITE_FALLBACK_DIR.mkdir(parents=True, exist_ok=True)
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
@@ -192,6 +198,27 @@ CACHES = {
         'OPTIONS': {'MAX_ENTRIES': 1000},
     }
 }
+
+# Runserver no debe caer antes de iniciar si MySQL está temporalmente apagado.
+try:
+    from django.core.management.base import BaseCommand
+    from django.db import DatabaseError
+    _base_check_migrations = BaseCommand.check_migrations
+
+    def _check_migrations_con_respaldo(self):
+        try:
+            return _base_check_migrations(self)
+        except DatabaseError:
+            return None
+        except Exception as exc:
+            texto = str(exc).lower()
+            if 'connect' in texto or 'mysql' in texto or 'mariadb' in texto:
+                return None
+            raise
+
+    BaseCommand.check_migrations = _check_migrations_con_respaldo
+except ImportError:
+    pass
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [

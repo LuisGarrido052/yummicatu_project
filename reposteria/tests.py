@@ -523,14 +523,16 @@ class ResilienciaCacheApiTests(BaseRolesTestCase):
         respuesta = self.client.get(reverse('api_solicitudes'))
         self.assertEqual(respuesta.status_code, 403)
 
-    def test_post_formulario_se_bloquea_sin_mysql(self):
-        with patch('reposteria.middleware.database_available', return_value=False):
+    def test_post_formulario_enciola_sin_mysql(self):
+        operacion_falsa = type('OperacionFalsa', (), {'pk': '00000000-0000-0000-0000-000000000001'})()
+        with patch('reposteria.views.database_available', return_value=False), \
+             patch('reposteria.views.queue_encargo_fallback', return_value=(operacion_falsa, True)):
             respuesta = self.client.post(reverse('formulario'), {
                 'run': '33333333-3', 'nombre': 'Daniela', 'apellido': 'Rojas',
                 'correo': 'dani@correo.cl', 'telefono': '+56955555555',
                 'producto': str(self.producto.pk), 'detalle': 'Encargo que no debe persistirse',
             })
-        self.assertEqual(respuesta.status_code, 302)
+        self.assertEqual(respuesta.status_code, 200)
         self.assertFalse(Cliente.objects.filter(run_cliente='33333333-3').exists())
 
     def test_estado_reporta_base_disponible(self):

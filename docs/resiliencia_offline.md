@@ -51,3 +51,40 @@ Se ejecutó Django con SQLite aislado mediante:
 `python manage.py test --settings=yummicatu_project.settings_test`
 
 Resultado: 46 pruebas ejecutadas, todas exitosas. Se comprobó serialización pública, caché ante fallo simulado, aislamiento de solicitudes propias, permisos del vendedor y bloqueo de escritura sin base disponible.
+
+## Base secundaria SQLite
+
+MySQL continúa como alias `default`. Se añadió `sqlite_fallback` como base independiente persistente en `data/sqlite/yummicatu_fallback.sqlite3`. Ambos directorios de respaldo están excluidos de Git.
+
+La migración `reposteria.0005_operacionpendiente` añadió una cola persistente con clave UUID de idempotencia. Las migraciones de datos 0003 y 0004 usan el alias real de conexión para evitar que migrar SQLite consulte MySQL.
+
+## Sincronización
+
+El comando `python manage.py sync_mysql_sqlite` sincroniza productos, clientes públicos necesarios y solicitudes desde MySQL hacia SQLite mediante `update_or_create`. No escribe datos vacíos si no existen productos válidos. También procesa encargos pendientes.
+
+`reposteria/resilience.py` devuelve catálogo desde:
+
+1. MySQL cuando está disponible.
+2. SQLite persistente cuando MySQL cae.
+3. Caché persistente como siguiente respaldo.
+4. JSON cuando no existe ninguna copia dinámica.
+
+La recuperación ejecuta la sincronización y procesa la cola. Las operaciones pendientes usan UUID determinístico basado en el payload, evitando duplicados al repetir la sincronización.
+
+## Validación real realizada
+
+Se creó `yummicatu_db`, se aplicaron migraciones existentes y se poblaron datos locales. Se ejecutó `sync_mysql_sqlite` con MySQL activo y se detuvo realmente el servicio Windows `MariaDB`.
+
+Resultados observados:
+
+- Django `runserver` inició mientras MariaDB estaba detenido.
+- `/` respondió HTTP 200.
+- `/galeria/` respondió HTTP 200.
+- `/api/productos/` respondió HTTP 200 con origen `sqlite_fallback`.
+- Se creó una operación pendiente con clave UUID mientras MySQL estaba caído.
+- Al recuperar MariaDB, `sync_mysql_sqlite` procesó una operación pendiente.
+- La segunda ejecución no creó duplicados; la cola quedó en estado `sincronizada`.
+- MySQL recibió un cliente y una solicitud de prueba una sola vez.
+- El API volvió a reportar origen `bd` después de recuperar MariaDB.
+
+También se verificaron 46 pruebas Django exitosas con la configuración aislada existente. La prueba aislada no reemplaza la validación real realizada con MariaDB detenido.

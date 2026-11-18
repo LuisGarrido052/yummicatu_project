@@ -21,7 +21,11 @@ from django.db import DatabaseError
 
 # Modelos ORM para integración con BD (Evaluación 2 y 3)
 from .models import Producto, Cliente, Solicitud
-from .resilience import cargar_productos_publicos
+from .resilience import (
+    cargar_productos_publicos,
+    database_available,
+    queue_encargo_fallback,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -168,6 +172,24 @@ def formulario(request):
         # Validación básica de campos requeridos
         if not all([run, nombre, apellido, correo, telefono, detalle]):
             messages.error(request, 'Por favor, complete todos los campos requeridos del formulario.')
+            return render(request, 'reposteria/formulario.html', {**contexto, 'form_data': request.POST})
+
+        if not database_available():
+            if not id_producto:
+                messages.error(request, 'Selecciona un producto antes de enviar el encargo.')
+                return render(request, 'reposteria/formulario.html', {**contexto, 'form_data': request.POST})
+            try:
+                operacion, creada = queue_encargo_fallback(
+                    run=run, nombre=nombre, apellido=apellido, correo=correo, telefono=telefono,
+                    producto_id=id_producto, detalle=detalle, cantidad=cantidad,
+                )
+                if creada:
+                    messages.warning(request, 'Tu encargo quedó registrado temporalmente en SQLite y será enviado a MySQL al recuperarse el servicio.')
+                else:
+                    messages.info(request, 'Este encargo ya estaba pendiente de sincronización; no se creó una solicitud duplicada.')
+            except Exception:
+                logger.exception('No fue posible guardar el encargo en la cola SQLite')
+                messages.error(request, 'No pudimos guardar el encargo ni confirmarlo. Inténtalo nuevamente al recuperar MySQL.')
             return render(request, 'reposteria/formulario.html', {**contexto, 'form_data': request.POST})
 
         # Un RUN con cuenta solo puede encargar con su sesión iniciada:

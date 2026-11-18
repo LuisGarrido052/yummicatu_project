@@ -9,19 +9,21 @@ from django.db import migrations, models
 
 
 def dar_permiso_eliminar(apps, schema_editor):
+    using = schema_editor.connection.alias
     Group = apps.get_model('auth', 'Group')
     Permission = apps.get_model('auth', 'Permission')
-    permiso = Permission.objects.filter(content_type__app_label='reposteria', codename='delete_producto').first()
-    grupo = Group.objects.filter(name='Vendedores').first()
+    permiso = Permission.objects.using(using).filter(content_type__app_label='reposteria', codename='delete_producto').first()
+    grupo = Group.objects.using(using).filter(name='Vendedores').first()
     if permiso and grupo:
         grupo.permissions.add(permiso)
 
 
 def quitar_permiso_eliminar(apps, schema_editor):
+    using = schema_editor.connection.alias
     Group = apps.get_model('auth', 'Group')
     Permission = apps.get_model('auth', 'Permission')
-    permiso = Permission.objects.filter(content_type__app_label='reposteria', codename='delete_producto').first()
-    grupo = Group.objects.filter(name='Vendedores').first()
+    permiso = Permission.objects.using(using).filter(content_type__app_label='reposteria', codename='delete_producto').first()
+    grupo = Group.objects.using(using).filter(name='Vendedores').first()
     if permiso and grupo:
         grupo.permissions.remove(permiso)
 

@@ -11,6 +11,8 @@ env/
 # Django
 staticfiles/
 db.sqlite3
+data/cache/
+data/sqlite/
 *.log
 
 # Editores / sistema
